@@ -28,7 +28,9 @@ import java.util.stream.Collectors;
 public class JdbcBookRepository implements BookRepository {
 
     private final GenreRepository genreRepository;
+
     private final NamedParameterJdbcTemplate jdbcTemplate;
+
     private final AuthorRepository authorRepository;
 
     @Override
@@ -207,20 +209,9 @@ public class JdbcBookRepository implements BookRepository {
 
             while (rs.next()) {
                 if (book == null) {
-                    long id = rs.getLong("id");
-                    String title = rs.getString("title");
-                    long authorId = rs.getLong("author_id");
-                    String authorFullName = rs.getString("full_name");
-
-                    Author author = new Author(authorId, authorFullName);
-                    book = new Book(id, title, author, new ArrayList<>());
+                    book = createBookFromResultSet(rs);
                 }
-
-                long genreId = rs.getLong("genre_id");
-                if (!rs.wasNull()) {
-                    String genreName = rs.getString("genre_name");
-                    genres.add(new Genre(genreId, genreName));
-                }
+                addGenreIfPresent(rs, genres);
             }
 
             if (book != null) {
@@ -228,6 +219,24 @@ public class JdbcBookRepository implements BookRepository {
             }
 
             return book;
+        }
+
+        private Book createBookFromResultSet(ResultSet rs) throws SQLException {
+            long id = rs.getLong("id");
+            String title = rs.getString("title");
+            long authorId = rs.getLong("author_id");
+            String authorFullName = rs.getString("full_name");
+
+            Author author = new Author(authorId, authorFullName);
+            return new Book(id, title, author, new ArrayList<>());
+        }
+
+        private void addGenreIfPresent(ResultSet rs, List<Genre> genres) throws SQLException {
+            long genreId = rs.getLong("genre_id");
+            if (!rs.wasNull()) {
+                String genreName = rs.getString("genre_name");
+                genres.add(new Genre(genreId, genreName));
+            }
         }
     }
 
