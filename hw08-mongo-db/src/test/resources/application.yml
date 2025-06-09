@@ -1,24 +1,36 @@
 spring:
   data:
     mongodb:
+      # Use a different database name for tests to avoid conflicts
       database: test
-      port: ${spring.data.mongodb.port:0}
-      host: ${spring.data.mongodb.host:localhost}
-      username: ${spring.data.mongodb.username:}
-      password: ${spring.data.mongodb.password:}
-      authentication-database: ${spring.data.mongodb.authentication-database:admin}
+      # For local testing, use a fixed port (27017)
+      port: 27017
+      host: localhost
+      # Default credentials for embedded MongoDB
+      # For CI, these will be overridden by environment variables
+      username: root
+      password: example
+      authentication-database: admin
   mongodb:
     embedded:
+      # Specify the version of embedded MongoDB to use
       version: 4.0.2
-  autoconfigure:
-    exclude: ${spring.autoconfigure.exclude:}
 de:
   flapdoodle:
     mongodb:
       embedded:
+        # Specify the version of embedded MongoDB to use
         version: 4.0.2
         features:
+          # Disable sync delay for faster tests
           sync_delay: 0
+          # Enable authentication for embedded MongoDB
+          no_auth: false
         network:
-          port: 0
+          # Use a fixed port (27017) for consistency
+          port: 27017
           bind-ip: localhost
+        # Increase timeouts for more reliable tests
+        timeout:
+          startup: 60000
+          connection: 30000
