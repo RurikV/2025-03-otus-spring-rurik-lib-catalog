@@ -7,15 +7,6 @@ jobs:
   build-app:
     runs-on: ubuntu-latest
 
-    services:
-      mongodb:
-        image: mongo:4.0.2
-        ports:
-          - 27017:27017
-        env:
-          MONGO_INITDB_ROOT_USERNAME: root
-          MONGO_INITDB_ROOT_PASSWORD: example
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -35,14 +26,10 @@ jobs:
         run: |
           mvn test --no-transfer-progress
         env:
-          SPRING_DATA_MONGODB_HOST: localhost
-          SPRING_DATA_MONGODB_PORT: 27017
           SPRING_DATA_MONGODB_DATABASE: test
-          SPRING_DATA_MONGODB_USERNAME: root
-          SPRING_DATA_MONGODB_PASSWORD: example
-          SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE: admin
           DE_FLAPDOODLE_MONGODB_EMBEDDED_VERSION: 4.0.2
           SPRING_MONGODB_EMBEDDED_VERSION: 4.0.2
+          # Do not set CI=true to allow embedded MongoDB to start
 
       - name: Build application
         run: |
