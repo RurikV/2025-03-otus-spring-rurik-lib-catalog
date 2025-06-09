@@ -2,10 +2,16 @@ spring:
   data:
     mongodb:
       database: test
-      port: 0
+      port: ${spring.data.mongodb.port:0}
+      host: ${spring.data.mongodb.host:localhost}
+      username: ${spring.data.mongodb.username:}
+      password: ${spring.data.mongodb.password:}
+      authentication-database: ${spring.data.mongodb.authentication-database:admin}
   mongodb:
     embedded:
       version: 4.0.2
+  autoconfigure:
+    exclude: ${spring.autoconfigure.exclude:}
 de:
   flapdoodle:
     mongodb:

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.context.annotation.Import;
+import ru.otus.hw.config.EmbeddedMongoDisabler;
 import ru.otus.hw.config.TestMongoConfig;
 import ru.otus.hw.models.Author;
 
@@ -14,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("AuthorRepository should")
 @DataMongoTest
-@Import(TestMongoConfig.class)
+@Import({TestMongoConfig.class, EmbeddedMongoDisabler.class})
 class AuthorRepositoryTest {
 
     @Autowired
