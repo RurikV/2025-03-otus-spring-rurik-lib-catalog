@@ -20,13 +20,35 @@ public class TestMongoConfig {
     @Value("${spring.data.mongodb.database}")
     private String database;
 
+    @Value("${spring.data.mongodb.port:0}")
+    private int port;
+
+    @Value("${spring.data.mongodb.host:localhost}")
+    private String host;
+
+    @Value("${spring.data.mongodb.username:}")
+    private String username;
+
+    @Value("${spring.data.mongodb.password:}")
+    private String password;
+
+    @Value("${spring.data.mongodb.authentication-database:admin}")
+    private String authDatabase;
+
     @Bean
     @Primary
     public MongoClient mongoClient() {
-        // For embedded MongoDB tests, we don't need to specify a connection string
-        // Spring Boot will automatically configure the embedded MongoDB
-        // and the tests will use it
+        // Use the embedded MongoDB with a random port
+        // or the MongoDB service container if specified in the environment
+        String connectionString;
+        if (!username.isEmpty() && !password.isEmpty()) {
+            connectionString = String.format("mongodb://%s:%s@%s:%d/%s?authSource=%s",
+                    username, password, host, port, database, authDatabase);
+        } else {
+            connectionString = String.format("mongodb://%s:%d", host, port);
+        }
         MongoClientSettings settings = MongoClientSettings.builder()
+                .applyConnectionString(new ConnectionString(connectionString))
                 .applyToSocketSettings(builder -> 
                     builder.connectTimeout(1000, TimeUnit.MILLISECONDS)
                            .readTimeout(1000, TimeUnit.MILLISECONDS))
