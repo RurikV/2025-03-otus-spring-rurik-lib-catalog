@@ -2,6 +2,7 @@ spring:
   data:
     mongodb:
       database: test
+      port: 0
   mongodb:
     embedded:
       version: 4.0.2
@@ -10,3 +11,8 @@ de:
     mongodb:
       embedded:
         version: 4.0.2
+        features:
+          sync_delay: 0
+        network:
+          port: 0
+          bind-ip: localhost

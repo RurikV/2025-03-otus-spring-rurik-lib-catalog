@@ -4,6 +4,7 @@ import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -16,12 +17,16 @@ import java.util.concurrent.TimeUnit;
 @TestConfiguration
 public class TestMongoConfig {
 
+    @Value("${spring.data.mongodb.database}")
+    private String database;
+
     @Bean
     @Primary
     public MongoClient mongoClient() {
-        ConnectionString connectionString = new ConnectionString("mongodb://root:example@localhost:27017/test?authSource=admin");
+        // For embedded MongoDB tests, we don't need to specify a connection string
+        // Spring Boot will automatically configure the embedded MongoDB
+        // and the tests will use it
         MongoClientSettings settings = MongoClientSettings.builder()
-                .applyConnectionString(connectionString)
                 .applyToSocketSettings(builder -> 
                     builder.connectTimeout(1000, TimeUnit.MILLISECONDS)
                            .readTimeout(1000, TimeUnit.MILLISECONDS))
@@ -32,7 +37,7 @@ public class TestMongoConfig {
     @Bean
     @Primary
     public MongoDatabaseFactory mongoDatabaseFactory(MongoClient mongoClient) {
-        return new SimpleMongoClientDatabaseFactory(mongoClient, "test");
+        return new SimpleMongoClientDatabaseFactory(mongoClient, database);
     }
 
     @Bean
