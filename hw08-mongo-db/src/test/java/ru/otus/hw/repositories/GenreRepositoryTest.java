@@ -26,16 +26,17 @@ class GenreRepositoryTest {
     @DisplayName("save genre correctly")
     @Test
     void shouldSaveGenre() {
-        // Create and save a new genre
+        // Arrange
         Genre expectedGenre = new Genre(null, "Test Genre");
-        Genre savedGenre = genreRepository.save(expectedGenre);
 
-        // Verify the genre was saved correctly
+        // Act
+        Genre savedGenre = genreRepository.save(expectedGenre);
+        Genre retrievedGenre = genreRepository.findById(savedGenre.getId()).orElseThrow();
+
+        // Assert
         assertThat(savedGenre.getId()).isNotNull();
         assertThat(savedGenre.getName()).isEqualTo(expectedGenre.getName());
 
-        // Verify the genre can be retrieved
-        Genre retrievedGenre = genreRepository.findById(savedGenre.getId()).orElseThrow();
         assertThat(retrievedGenre).isNotNull();
         assertThat(retrievedGenre.getId()).isEqualTo(savedGenre.getId());
         assertThat(retrievedGenre.getName()).isEqualTo(expectedGenre.getName());
@@ -44,13 +45,15 @@ class GenreRepositoryTest {
     @DisplayName("find all genres")
     @Test
     void shouldFindAllGenres() {
-        // Create and save genres
+        // Arrange
         Genre genre1 = new Genre(null, "Test Genre 1");
         Genre genre2 = new Genre(null, "Test Genre 2");
         genreRepository.saveAll(List.of(genre1, genre2));
 
-        // Verify all genres can be retrieved
+        // Act
         List<Genre> genres = genreRepository.findAll();
+
+        // Assert
         assertThat(genres).isNotEmpty();
         assertThat(genres.size()).isGreaterThanOrEqualTo(2);
     }
@@ -58,18 +61,15 @@ class GenreRepositoryTest {
     @DisplayName("find all genres by ids")
     @Test
     void shouldFindAllGenresByIds() {
-        // Create and save genres
+        // Arrange
         Genre genre1 = genreRepository.save(new Genre(null, "Test Genre 1"));
         Genre genre2 = genreRepository.save(new Genre(null, "Test Genre 2"));
-        Genre genre3 = genreRepository.save(new Genre(null, "Test Genre 3"));
-
-        // Get the ids of the first two genres
         Set<String> genreIds = Set.of(genre1.getId(), genre2.getId());
 
-        // Find genres by ids
+        // Act
         List<Genre> foundGenres = genreRepository.findAllByIds(genreIds);
 
-        // Verify the correct genres were found
+        // Assert
         assertThat(foundGenres).hasSize(2);
         Set<String> foundGenreIds = foundGenres.stream()
                 .map(Genre::getId)

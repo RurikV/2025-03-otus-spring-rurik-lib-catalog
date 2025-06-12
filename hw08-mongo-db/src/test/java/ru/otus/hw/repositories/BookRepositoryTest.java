@@ -32,16 +32,17 @@ class BookRepositoryTest {
     @DisplayName("save book correctly")
     @Test
     void shouldSaveBook() {
-        // Create test data
+        // Arrange
         Author author = authorRepository.save(new Author(null, "Test Author"));
         Genre genre1 = genreRepository.save(new Genre(null, "Test Genre 1"));
         Genre genre2 = genreRepository.save(new Genre(null, "Test Genre 2"));
-
-        // Create and save a new book
         Book expectedBook = new Book(null, "Test Book", author, List.of(genre1, genre2));
-        Book savedBook = bookRepository.save(expectedBook);
 
-        // Verify the book was saved correctly
+        // Act
+        Book savedBook = bookRepository.save(expectedBook);
+        Book retrievedBook = bookRepository.findById(savedBook.getId()).orElseThrow();
+
+        // Assert
         assertThat(savedBook.getId()).isNotNull();
         assertThat(savedBook.getTitle()).isEqualTo(expectedBook.getTitle());
         assertThat(savedBook.getAuthor().getId()).isEqualTo(author.getId());
@@ -49,8 +50,7 @@ class BookRepositoryTest {
         assertThat(savedBook.getGenres().get(0).getId()).isEqualTo(genre1.getId());
         assertThat(savedBook.getGenres().get(1).getId()).isEqualTo(genre2.getId());
 
-        // Verify the book can be retrieved
-        Book retrievedBook = bookRepository.findById(savedBook.getId()).orElseThrow();
+        // Assert
         assertThat(retrievedBook).isNotNull();
         assertThat(retrievedBook.getId()).isEqualTo(savedBook.getId());
         assertThat(retrievedBook.getTitle()).isEqualTo(expectedBook.getTitle());
@@ -59,17 +59,17 @@ class BookRepositoryTest {
     @DisplayName("find all books")
     @Test
     void shouldFindAllBooks() {
-        // Create test data
+        // Arrange
         Author author = authorRepository.save(new Author(null, "Test Author"));
         Genre genre = genreRepository.save(new Genre(null, "Test Genre"));
-
-        // Create and save books
         Book book1 = new Book(null, "Test Book 1", author, List.of(genre));
         Book book2 = new Book(null, "Test Book 2", author, List.of(genre));
         bookRepository.saveAll(List.of(book1, book2));
 
-        // Verify all books can be retrieved
+        // Act
         List<Book> books = bookRepository.findAll();
+
+        // Assert
         assertThat(books).isNotEmpty();
         assertThat(books.size()).isGreaterThanOrEqualTo(2);
     }
@@ -77,18 +77,16 @@ class BookRepositoryTest {
     @DisplayName("delete book by id")
     @Test
     void shouldDeleteBookById() {
-        // Create test data
+        // Arrange
         Author author = authorRepository.save(new Author(null, "Test Author"));
         Genre genre = genreRepository.save(new Genre(null, "Test Genre"));
-
-        // Create and save a book
         Book book = new Book(null, "Test Book", author, List.of(genre));
         Book savedBook = bookRepository.save(book);
 
-        // Delete the book
+        // Act
         bookRepository.deleteById(savedBook.getId());
 
-        // Verify the book was deleted
+        // Assert
         assertThat(bookRepository.findById(savedBook.getId())).isEmpty();
     }
 }

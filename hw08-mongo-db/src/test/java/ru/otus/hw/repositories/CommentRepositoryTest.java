@@ -36,22 +36,21 @@ class CommentRepositoryTest {
     @DisplayName("save comment correctly")
     @Test
     void shouldSaveComment() {
-        // Create test data
+        // Arrange
         Author author = authorRepository.save(new Author(null, "Test Author"));
         Genre genre = genreRepository.save(new Genre(null, "Test Genre"));
         Book book = bookRepository.save(new Book(null, "Test Book", author, List.of(genre)));
-
-        // Create and save a new comment
         Comment expectedComment = new Comment(null, "Test Comment", book);
-        Comment savedComment = commentRepository.save(expectedComment);
 
-        // Verify the comment was saved correctly
+        // Act
+        Comment savedComment = commentRepository.save(expectedComment);
+        Comment retrievedComment = commentRepository.findById(savedComment.getId()).orElseThrow();
+
+        // Assert
         assertThat(savedComment.getId()).isNotNull();
         assertThat(savedComment.getText()).isEqualTo(expectedComment.getText());
         assertThat(savedComment.getBook().getId()).isEqualTo(book.getId());
 
-        // Verify the comment can be retrieved
-        Comment retrievedComment = commentRepository.findById(savedComment.getId()).orElseThrow();
         assertThat(retrievedComment).isNotNull();
         assertThat(retrievedComment.getId()).isEqualTo(savedComment.getId());
         assertThat(retrievedComment.getText()).isEqualTo(expectedComment.getText());
@@ -61,18 +60,18 @@ class CommentRepositoryTest {
     @DisplayName("find comments by book id")
     @Test
     void shouldFindCommentsByBookId() {
-        // Create test data
+        // Arrange
         Author author = authorRepository.save(new Author(null, "Test Author"));
         Genre genre = genreRepository.save(new Genre(null, "Test Genre"));
         Book book = bookRepository.save(new Book(null, "Test Book", author, List.of(genre)));
-
-        // Create and save comments
         Comment comment1 = new Comment(null, "Test Comment 1", book);
         Comment comment2 = new Comment(null, "Test Comment 2", book);
         commentRepository.saveAll(List.of(comment1, comment2));
 
-        // Verify comments can be retrieved by book id
+        // Act
         List<Comment> comments = commentRepository.findByBookId(book.getId());
+
+        // Assert
         assertThat(comments).isNotEmpty();
         assertThat(comments).hasSize(2);
         assertThat(comments.get(0).getBook().getId()).isEqualTo(book.getId());
@@ -82,19 +81,17 @@ class CommentRepositoryTest {
     @DisplayName("delete comment by id")
     @Test
     void shouldDeleteCommentById() {
-        // Create test data
+        // Arrange
         Author author = authorRepository.save(new Author(null, "Test Author"));
         Genre genre = genreRepository.save(new Genre(null, "Test Genre"));
         Book book = bookRepository.save(new Book(null, "Test Book", author, List.of(genre)));
-
-        // Create and save a comment
         Comment comment = new Comment(null, "Test Comment", book);
         Comment savedComment = commentRepository.save(comment);
 
-        // Delete the comment
+        // Act
         commentRepository.deleteById(savedComment.getId());
 
-        // Verify the comment was deleted
+        // Assert
         assertThat(commentRepository.findById(savedComment.getId())).isEmpty();
     }
 }

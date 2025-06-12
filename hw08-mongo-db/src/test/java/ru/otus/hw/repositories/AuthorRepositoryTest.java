@@ -24,16 +24,17 @@ class AuthorRepositoryTest {
     @DisplayName("save author correctly")
     @Test
     void shouldSaveAuthor() {
-        // Create and save a new author
+        // Arrange
         Author expectedAuthor = new Author(null, "Test Author");
-        Author savedAuthor = authorRepository.save(expectedAuthor);
 
-        // Verify the author was saved correctly
+        // Act
+        Author savedAuthor = authorRepository.save(expectedAuthor);
+        Author retrievedAuthor = authorRepository.findById(savedAuthor.getId()).orElseThrow();
+
+        // Assert
         assertThat(savedAuthor.getId()).isNotNull();
         assertThat(savedAuthor.getFullName()).isEqualTo(expectedAuthor.getFullName());
 
-        // Verify the author can be retrieved
-        Author retrievedAuthor = authorRepository.findById(savedAuthor.getId()).orElseThrow();
         assertThat(retrievedAuthor).isNotNull();
         assertThat(retrievedAuthor.getId()).isEqualTo(savedAuthor.getId());
         assertThat(retrievedAuthor.getFullName()).isEqualTo(expectedAuthor.getFullName());
@@ -42,13 +43,15 @@ class AuthorRepositoryTest {
     @DisplayName("find all authors")
     @Test
     void shouldFindAllAuthors() {
-        // Create and save authors
+        // Arrange
         Author author1 = new Author(null, "Test Author 1");
         Author author2 = new Author(null, "Test Author 2");
         authorRepository.saveAll(List.of(author1, author2));
 
-        // Verify all authors can be retrieved
+        // Act
         List<Author> authors = authorRepository.findAll();
+
+        // Assert
         assertThat(authors).isNotEmpty();
         assertThat(authors.size()).isGreaterThanOrEqualTo(2);
     }
