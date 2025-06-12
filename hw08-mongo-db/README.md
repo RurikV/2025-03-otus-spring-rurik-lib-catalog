@@ -33,6 +33,7 @@ The application uses MongoDB with the following collections:
 - **authors**: Stores information about book authors
 - **genres**: Stores information about book genres
 - **books**: Stores information about books with references to authors and genres
+- **comments**: Stores comments about books with references to the books they are about
 
 The database is initialized with sample data when the application starts.
 
@@ -81,6 +82,44 @@ The database is initialized with sample data when the application starts.
   aa
   ```
 
+### Comment Commands
+- **cbid** - Find comment by id
+  ```
+  cbid "60c72b2f5e8e7a1234567890"
+  ```
+  Parameters:
+  - Comment ID (MongoDB ObjectId as string)
+
+- **cbbid** - Find comments by book id
+  ```
+  cbbid "60c72b2f5e8e7a1234567890"
+  ```
+  Parameters:
+  - Book ID (MongoDB ObjectId as string)
+
+- **cins** - Insert a new comment
+  ```
+684b5a89d966785da85e8428 "60c72b2f5e8e7a1234567890"
+  ```
+  Parameters:
+  - Comment text (in quotes if it contains spaces)
+  - Book ID (MongoDB ObjectId as string)
+
+- **cupd** - Update an existing comment
+  ```
+  cupd "60c72b2f5e8e7a1234567890" "Updated comment text"
+  ```
+  Parameters:
+  - Comment ID to update (MongoDB ObjectId as string)
+  - New comment text (in quotes if it contains spaces)
+
+- **cdel** - Delete a comment by id
+  ```
+  cdel "60c72b2f5e8e7a1234567890"
+  ```
+  Parameters:
+  - Comment ID to delete (MongoDB ObjectId as string)
+
 ### Genre Commands
 - **ag** - Find all genres
   ```
@@ -128,6 +167,37 @@ The database is initialized with sample data when the application starts.
    ```
    ag
    ```
+
+### Managing Comments
+1. Find comments for a specific book:
+   ```
+   cbbid "60c72b2f5e8e7a1234567890"
+   ```
+   This lists all comments for the book with the specified ID.
+
+2. Add a new comment to a book:
+   ```
+   cins "I really enjoyed this book!" "60c72b2f5e8e7a1234567890"
+   ```
+   This adds a new comment to the book with the specified ID.
+
+3. Find a specific comment by ID:
+   ```
+   cbid "60c72b2f5e8e7a1234567890"
+   ```
+   This retrieves the comment with the specified ID.
+
+4. Update an existing comment:
+   ```
+   cupd "60c72b2f5e8e7a1234567890" "After rereading, I have a new perspective on this book."
+   ```
+   This updates the text of the comment with the specified ID.
+
+5. Delete a comment:
+   ```
+   cdel "60c72b2f5e8e7a1234567890"
+   ```
+   This deletes the comment with the specified ID.
 
 ## MongoDB Admin Interface
 The application includes MongoDB Express, a web-based MongoDB admin interface, which can be accessed at:
