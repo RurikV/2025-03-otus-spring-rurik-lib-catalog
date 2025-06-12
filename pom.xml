@@ -5,12 +5,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ru.otus</groupId>
-    <artifactId>spring-hwm1</artifactId>
+    <artifactId>spring-lib-catalog</artifactId>
     <version>1.0</version>
 
     <packaging>pom</packaging>
 
     <modules>
+        <module>hw05-jdbc-hard</module>
+        <module>hw06-orm-jpa</module>
         <module>hw08-mongo-db</module>
     </modules>
 </project>
