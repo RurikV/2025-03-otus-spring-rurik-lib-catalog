@@ -33,11 +33,11 @@ class AuthorRepositoryTest {
 
         // Assert
         assertThat(savedAuthor.getId()).isNotNull();
-        assertThat(savedAuthor.getFullName()).isEqualTo(expectedAuthor.getFullName());
+        expectedAuthor.setId(savedAuthor.getId());
+        assertThat(savedAuthor).usingRecursiveComparison().isEqualTo(expectedAuthor);
 
         assertThat(retrievedAuthor).isNotNull();
-        assertThat(retrievedAuthor.getId()).isEqualTo(savedAuthor.getId());
-        assertThat(retrievedAuthor.getFullName()).isEqualTo(expectedAuthor.getFullName());
+        assertThat(retrievedAuthor).usingRecursiveComparison().isEqualTo(savedAuthor);
     }
 
     @DisplayName("find all authors")
@@ -50,9 +50,23 @@ class AuthorRepositoryTest {
 
         // Act
         List<Author> authors = authorRepository.findAll();
+        // Set IDs for expected authors to match the actual authors
+        List<Author> savedAuthors = authors.stream()
+                .filter(a -> a.getFullName().equals(author1.getFullName()) || a.getFullName().equals(author2.getFullName()))
+                .toList();
 
         // Assert
         assertThat(authors).isNotEmpty();
         assertThat(authors.size()).isGreaterThanOrEqualTo(2);
+
+        if (savedAuthors.size() >= 2) {
+            author1.setId(savedAuthors.get(0).getId());
+            author2.setId(savedAuthors.get(1).getId());
+
+            // Use recursive comparison to verify the authors exist in the result
+            assertThat(authors)
+                .usingRecursiveFieldByFieldElementComparator()
+                .contains(author1, author2);
+        }
     }
 }

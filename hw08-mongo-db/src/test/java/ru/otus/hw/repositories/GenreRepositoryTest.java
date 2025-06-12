@@ -11,7 +11,6 @@ import ru.otus.hw.models.Genre;
 
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -35,11 +34,11 @@ class GenreRepositoryTest {
 
         // Assert
         assertThat(savedGenre.getId()).isNotNull();
-        assertThat(savedGenre.getName()).isEqualTo(expectedGenre.getName());
+        expectedGenre.setId(savedGenre.getId());
+        assertThat(savedGenre).usingRecursiveComparison().isEqualTo(expectedGenre);
 
         assertThat(retrievedGenre).isNotNull();
-        assertThat(retrievedGenre.getId()).isEqualTo(savedGenre.getId());
-        assertThat(retrievedGenre.getName()).isEqualTo(expectedGenre.getName());
+        assertThat(retrievedGenre).usingRecursiveComparison().isEqualTo(savedGenre);
     }
 
     @DisplayName("find all genres")
@@ -52,10 +51,26 @@ class GenreRepositoryTest {
 
         // Act
         List<Genre> genres = genreRepository.findAll();
+        // Set IDs for expected genres to match the actual genres
+        List<Genre> savedGenres = genres.stream()
+                .filter(g -> g.getName().equals(genre1.getName()) || g.getName().equals(genre2.getName()))
+                .toList();
+        if (savedGenres.size() >= 2) {
+            genre1.setId(savedGenres.get(0).getId());
+            genre2.setId(savedGenres.get(1).getId());
+        }
 
         // Assert
         assertThat(genres).isNotEmpty();
         assertThat(genres.size()).isGreaterThanOrEqualTo(2);
+
+
+        if (savedGenres.size() >= 2) {
+            // Use recursive comparison to verify the genres exist in the result
+            assertThat(genres)
+                .usingRecursiveFieldByFieldElementComparator()
+                .contains(genre1, genre2);
+        }
     }
 
     @DisplayName("find all genres by ids")
@@ -71,9 +86,10 @@ class GenreRepositoryTest {
 
         // Assert
         assertThat(foundGenres).hasSize(2);
-        Set<String> foundGenreIds = foundGenres.stream()
-                .map(Genre::getId)
-                .collect(Collectors.toSet());
-        assertThat(foundGenreIds).containsExactlyInAnyOrderElementsOf(genreIds);
+
+        // Use recursive comparison to verify all fields match
+        assertThat(foundGenres)
+            .usingRecursiveFieldByFieldElementComparator()
+            .containsExactlyInAnyOrderElementsOf(List.of(genre1, genre2));
     }
 }

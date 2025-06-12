@@ -48,13 +48,11 @@ class CommentRepositoryTest {
 
         // Assert
         assertThat(savedComment.getId()).isNotNull();
-        assertThat(savedComment.getText()).isEqualTo(expectedComment.getText());
-        assertThat(savedComment.getBook().getId()).isEqualTo(book.getId());
+        expectedComment.setId(savedComment.getId());
+        assertThat(savedComment).usingRecursiveComparison().isEqualTo(expectedComment);
 
         assertThat(retrievedComment).isNotNull();
-        assertThat(retrievedComment.getId()).isEqualTo(savedComment.getId());
-        assertThat(retrievedComment.getText()).isEqualTo(expectedComment.getText());
-        assertThat(retrievedComment.getBook().getId()).isEqualTo(book.getId());
+        assertThat(retrievedComment).usingRecursiveComparison().isEqualTo(savedComment);
     }
 
     @DisplayName("find comments by book id")
@@ -70,12 +68,18 @@ class CommentRepositoryTest {
 
         // Act
         List<Comment> comments = commentRepository.findByBookId(book.getId());
+        // Set IDs for expected comments to match the actual comments
+        comment1.setId(comments.get(0).getId());
+        comment2.setId(comments.get(1).getId());
 
         // Assert
         assertThat(comments).isNotEmpty();
         assertThat(comments).hasSize(2);
-        assertThat(comments.get(0).getBook().getId()).isEqualTo(book.getId());
-        assertThat(comments.get(1).getBook().getId()).isEqualTo(book.getId());
+
+        // Use recursive comparison to verify all fields match
+        assertThat(comments)
+            .usingRecursiveFieldByFieldElementComparator()
+            .containsExactlyInAnyOrder(comment1, comment2);
     }
 
     @DisplayName("delete comment by id")

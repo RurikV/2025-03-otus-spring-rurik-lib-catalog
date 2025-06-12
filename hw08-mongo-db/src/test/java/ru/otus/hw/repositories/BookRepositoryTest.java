@@ -44,16 +44,12 @@ class BookRepositoryTest {
 
         // Assert
         assertThat(savedBook.getId()).isNotNull();
-        assertThat(savedBook.getTitle()).isEqualTo(expectedBook.getTitle());
-        assertThat(savedBook.getAuthor().getId()).isEqualTo(author.getId());
-        assertThat(savedBook.getGenres()).hasSize(2);
-        assertThat(savedBook.getGenres().get(0).getId()).isEqualTo(genre1.getId());
-        assertThat(savedBook.getGenres().get(1).getId()).isEqualTo(genre2.getId());
+        expectedBook.setId(savedBook.getId());
+        assertThat(savedBook).usingRecursiveComparison().isEqualTo(expectedBook);
 
         // Assert
         assertThat(retrievedBook).isNotNull();
-        assertThat(retrievedBook.getId()).isEqualTo(savedBook.getId());
-        assertThat(retrievedBook.getTitle()).isEqualTo(expectedBook.getTitle());
+        assertThat(retrievedBook).usingRecursiveComparison().isEqualTo(savedBook);
     }
 
     @DisplayName("find all books")
@@ -68,10 +64,25 @@ class BookRepositoryTest {
 
         // Act
         List<Book> books = bookRepository.findAll();
+        // Set IDs for expected books to match the actual books
+        List<Book> savedBooks = books.stream()
+                .filter(b -> b.getTitle().equals(book1.getTitle()) || b.getTitle().equals(book2.getTitle()))
+                .toList();
+        if (savedBooks.size() >= 2) {
+            book1.setId(savedBooks.get(0).getId());
+            book2.setId(savedBooks.get(1).getId());
+        }
 
         // Assert
         assertThat(books).isNotEmpty();
         assertThat(books.size()).isGreaterThanOrEqualTo(2);
+
+        if (savedBooks.size() >= 2) {
+            // Use recursive comparison to verify the books exist in the result
+            assertThat(books)
+                .usingRecursiveFieldByFieldElementComparator()
+                .contains(book1, book2);
+        }
     }
 
     @DisplayName("delete book by id")
