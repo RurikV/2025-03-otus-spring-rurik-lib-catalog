@@ -30,7 +30,7 @@ public class JpaBookRepository implements BookRepository {
     @Override
     public List<Book> findAll() {
         EntityGraph<Book> entityGraph = em.createEntityGraph(Book.class);
-        entityGraph.addAttributeNodes("author");
+        entityGraph.addAttributeNodes("author", "genres");
 
         return em.createQuery("select b from Book b", Book.class)
                 .setHint("jakarta.persistence.fetchgraph", entityGraph)

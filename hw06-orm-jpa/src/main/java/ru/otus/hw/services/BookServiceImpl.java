@@ -34,7 +34,10 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional(readOnly = true)
     public List<Book> findAll() {
-        return bookRepository.findAll();
+        List<Book> books = bookRepository.findAll();
+        // Принудительно загружаем жанры, вызывая size() для инициализации lazy-коллекции
+        books.forEach(book -> book.getGenres().size());
+        return books;
     }
 
     @Override
@@ -46,7 +49,25 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional
     public Book update(long id, String title, long authorId, Set<Long> genresIds) {
-        return save(id, title, authorId, genresIds);
+        if (isEmpty(genresIds)) {
+            throw new IllegalArgumentException("Genres ids must not be null");
+        }
+
+        var book = bookRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Book with id %d not found".formatted(id)));
+
+        var author = authorRepository.findById(authorId)
+                .orElseThrow(() -> new EntityNotFoundException("Author with id %d not found".formatted(authorId)));
+        var genres = genreRepository.findAllByIds(genresIds);
+        if (isEmpty(genres) || genresIds.size() != genres.size()) {
+            throw new EntityNotFoundException("One or all genres with ids %s not found".formatted(genresIds));
+        }
+
+        book.setTitle(title);
+        book.setAuthor(author);
+        book.setGenres(genres);
+
+        return bookRepository.save(book);
     }
 
     @Override
