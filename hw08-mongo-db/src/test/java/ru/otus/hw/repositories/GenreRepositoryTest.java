@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.junit.jupiter.api.BeforeEach;
 import ru.otus.hw.config.EmbeddedMongoDisabler;
-import ru.otus.hw.config.TestMongoConfig;
 import ru.otus.hw.models.Genre;
 
 import java.util.List;
@@ -18,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("GenreRepository should")
 @DataMongoTest
-@Import({TestMongoConfig.class, EmbeddedMongoDisabler.class})
+@Import({EmbeddedMongoDisabler.class})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class GenreRepositoryTest {
 
