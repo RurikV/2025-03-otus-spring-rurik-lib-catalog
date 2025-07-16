@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.DirtiesContext;
+import org.junit.jupiter.api.BeforeEach;
 import ru.otus.hw.config.EmbeddedMongoDisabler;
 import ru.otus.hw.config.TestMongoConfig;
 import ru.otus.hw.models.Author;
@@ -19,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("CommentRepository should")
 @DataMongoTest
 @Import({TestMongoConfig.class, EmbeddedMongoDisabler.class})
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class CommentRepositoryTest {
 
     @Autowired
@@ -32,6 +35,15 @@ class CommentRepositoryTest {
 
     @Autowired
     private GenreRepository genreRepository;
+
+    @BeforeEach
+    void setUp() {
+        // Clear all collections before each test to ensure clean state
+        commentRepository.deleteAll();
+        bookRepository.deleteAll();
+        authorRepository.deleteAll();
+        genreRepository.deleteAll();
+    }
 
     @DisplayName("save comment correctly")
     @Test
@@ -52,7 +64,9 @@ class CommentRepositoryTest {
         assertThat(savedComment).usingRecursiveComparison().isEqualTo(expectedComment);
 
         assertThat(retrievedComment).isNotNull();
-        assertThat(retrievedComment).usingRecursiveComparison().isEqualTo(savedComment);
+        assertThat(retrievedComment).usingRecursiveComparison()
+                .ignoringFieldsMatchingRegexes(".*CGLIB.*")
+                .isEqualTo(savedComment);
     }
 
     @DisplayName("find comments by book id")
@@ -78,7 +92,16 @@ class CommentRepositoryTest {
 
         // Use recursive comparison to verify all fields match
         assertThat(comments)
-            .usingRecursiveFieldByFieldElementComparator()
+            .usingElementComparator((c1, c2) -> {
+                try {
+                    assertThat(c1).usingRecursiveComparison()
+                            .ignoringFieldsMatchingRegexes(".*CGLIB.*")
+                            .isEqualTo(c2);
+                    return 0;
+                } catch (AssertionError e) {
+                    return -1;
+                }
+            })
             .containsExactlyInAnyOrder(comment1, comment2);
     }
 
