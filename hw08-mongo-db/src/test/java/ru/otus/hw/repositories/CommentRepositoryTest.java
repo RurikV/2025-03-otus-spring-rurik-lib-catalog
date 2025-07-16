@@ -49,10 +49,14 @@ class CommentRepositoryTest {
         // Assert
         assertThat(savedComment.getId()).isNotNull();
         expectedComment.setId(savedComment.getId());
-        assertThat(savedComment).usingRecursiveComparison().isEqualTo(expectedComment);
+        assertThat(savedComment).usingRecursiveComparison()
+                .ignoringFieldsMatchingRegexes(".*CGLIB.*")
+                .isEqualTo(expectedComment);
 
         assertThat(retrievedComment).isNotNull();
-        assertThat(retrievedComment).usingRecursiveComparison().isEqualTo(savedComment);
+        assertThat(retrievedComment).usingRecursiveComparison()
+                .ignoringFieldsMatchingRegexes(".*CGLIB.*")
+                .isEqualTo(savedComment);
     }
 
     @DisplayName("find comments by book id")
@@ -78,7 +82,7 @@ class CommentRepositoryTest {
 
         // Use recursive comparison to verify all fields match
         assertThat(comments)
-            .usingRecursiveFieldByFieldElementComparator()
+            .usingElementComparatorIgnoringFields("book.CGLIB$CALLBACK_0", "book.CGLIB$BOUND")
             .containsExactlyInAnyOrder(comment1, comment2);
     }
 
