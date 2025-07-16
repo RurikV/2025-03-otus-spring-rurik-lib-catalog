@@ -6,8 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.otus.hw.config.EmbeddedMongoDisabler;
-import ru.otus.hw.config.TestMongoConfig;
 import ru.otus.hw.listeners.BookCascadeDeleteListener;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
@@ -24,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("BookService should")
 @DataMongoTest
-@Import({TestMongoConfig.class, EmbeddedMongoDisabler.class, BookServiceImpl.class, BookCascadeDeleteListener.class})
+@Import({BookServiceImpl.class, BookCascadeDeleteListener.class})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class BookServiceTest {
 

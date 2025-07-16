@@ -1,16 +1,11 @@
 spring:
-  autoconfigure:
-    exclude:
-      - de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongoAutoConfiguration
   data:
     mongodb:
       # Use a different database name for tests to avoid conflicts
       database: test
-      # For local testing, use a fixed port (27017)
-      port: 27017
-      host: localhost
-      # Default credentials for external MongoDB (Docker container)
-      # For CI, these will be overridden by environment variables
-      username: root
-      password: example
-      authentication-database: admin
+
+de:
+  flapdoodle:
+    mongodb:
+      embedded:
+        version: 4.4.18
