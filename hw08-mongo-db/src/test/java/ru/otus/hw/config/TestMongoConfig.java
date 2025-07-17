@@ -60,13 +60,21 @@ public class TestMongoConfig {
                     username, password, host, port, database, authDatabase);
             System.out.println("Using external MongoDB with provided credentials: " + connectionString);
         } else {
-            // For local testing, use default credentials that match the compose.yaml file
-            String defaultUsername = "root";
-            String defaultPassword = "example";
-            int defaultPort = 27017;
-            connectionString = String.format("mongodb://%s:%s@%s:%d/%s?authSource=%s",
-                    defaultUsername, defaultPassword, host, defaultPort, database, authDatabase);
-            System.out.println("Using external MongoDB for local testing: " + connectionString);
+            // For local testing without credentials, try embedded MongoDB first, then external with defaults
+            // Check if we can use embedded MongoDB (no credentials provided)
+            if (username.isEmpty() && password.isEmpty()) {
+                // Use embedded MongoDB without authentication for local testing
+                connectionString = String.format("mongodb://%s:%d/%s", host, port > 0 ? port : 27017, database);
+                System.out.println("Using embedded MongoDB for local testing (no auth): " + connectionString);
+            } else {
+                // Fallback to external MongoDB with default credentials
+                String defaultUsername = "root";
+                String defaultPassword = "example";
+                int defaultPort = 27017;
+                connectionString = String.format("mongodb://%s:%s@%s:%d/%s?authSource=%s",
+                        defaultUsername, defaultPassword, host, defaultPort, database, authDatabase);
+                System.out.println("Using external MongoDB for local testing: " + connectionString);
+            }
         }
 
         MongoClientSettings settings = MongoClientSettings.builder()

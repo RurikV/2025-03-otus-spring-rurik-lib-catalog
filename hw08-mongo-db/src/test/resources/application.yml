@@ -6,11 +6,6 @@ spring:
       # For local testing, use a fixed port (27017)
       port: 27017
       host: localhost
-      # Default credentials for embedded MongoDB
-      # For CI, these will be overridden by environment variables
-      username: root
-      password: example
-      authentication-database: admin
   mongodb:
     embedded:
       # Specify the version of embedded MongoDB to use
