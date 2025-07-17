@@ -14,7 +14,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("AuthorRepository should")
-@DataMongoTest
+@DataMongoTest(excludeAutoConfiguration = de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongoAutoConfiguration.class)
 @Import({TestMongoConfig.class, EmbeddedMongoDisabler.class})
 class AuthorRepositoryTest {
 

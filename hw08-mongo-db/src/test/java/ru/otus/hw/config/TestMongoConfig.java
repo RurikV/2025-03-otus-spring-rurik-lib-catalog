@@ -12,10 +12,15 @@ import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
 
+import jakarta.annotation.PreDestroy;
+import org.springframework.context.annotation.Import;
 import java.util.concurrent.TimeUnit;
 
 @TestConfiguration
+@Import(MongoTestLifecycleManager.class)
 public class TestMongoConfig {
+
+    private MongoClient mongoClient;
 
     @Value("${spring.data.mongodb.database}")
     private String database;
@@ -66,7 +71,8 @@ public class TestMongoConfig {
                     builder.connectTimeout(2000, TimeUnit.MILLISECONDS)
                            .readTimeout(2000, TimeUnit.MILLISECONDS))
                 .build();
-        return MongoClients.create(settings);
+        this.mongoClient = MongoClients.create(settings);
+        return this.mongoClient;
     }
 
     @Bean
@@ -79,5 +85,14 @@ public class TestMongoConfig {
     @Primary
     public MongoTemplate mongoTemplate(MongoDatabaseFactory mongoDatabaseFactory) {
         return new MongoTemplate(mongoDatabaseFactory);
+    }
+
+    @PreDestroy
+    public void closeMongoClient() {
+        if (mongoClient != null) {
+            System.out.println("Closing MongoDB client connection...");
+            mongoClient.close();
+            System.out.println("MongoDB client connection closed.");
+        }
     }
 }

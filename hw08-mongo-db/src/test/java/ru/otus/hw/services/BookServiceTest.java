@@ -4,9 +4,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.boot.test.context.TestConfiguration;
 import ru.otus.hw.config.EmbeddedMongoDisabler;
 import ru.otus.hw.config.TestMongoConfig;
 import ru.otus.hw.listeners.BookDeleteListener;
@@ -23,28 +21,10 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("BookService should")
-@DataMongoTest
-@Import({TestMongoConfig.class, EmbeddedMongoDisabler.class, BookServiceTest.TestConfig.class})
+@DisplayName("BookDeleteListener should")
+@DataMongoTest(excludeAutoConfiguration = de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongoAutoConfiguration.class)
+@Import({TestMongoConfig.class, EmbeddedMongoDisabler.class, BookDeleteListener.class})
 class BookServiceTest {
-
-    @TestConfiguration
-    static class TestConfig {
-        @Bean
-        public BookServiceImpl bookService(AuthorRepository authorRepository, 
-                                         GenreRepository genreRepository, 
-                                         BookRepository bookRepository) {
-            return new BookServiceImpl(authorRepository, genreRepository, bookRepository);
-        }
-        
-        @Bean
-        public BookDeleteListener bookDeleteListener(CommentRepository commentRepository) {
-            return new BookDeleteListener(commentRepository);
-        }
-    }
-
-    @Autowired
-    private BookServiceImpl bookService;
 
     @Autowired
     private BookRepository bookRepository;
@@ -58,9 +38,9 @@ class BookServiceTest {
     @Autowired
     private GenreRepository genreRepository;
 
-    @DisplayName("delete book and its comments when deleteById is called")
+    @DisplayName("automatically delete comments when book is deleted")
     @Test
-    void shouldDeleteBookAndCommentsWhenDeleteById() {
+    void shouldDeleteCommentsWhenBookIsDeleted() {
         // Arrange
         Author author = authorRepository.save(new Author(null, "Test Author"));
         Genre genre = genreRepository.save(new Genre(null, "Test Genre"));
@@ -80,14 +60,14 @@ class BookServiceTest {
         assertThat(bookRepository.findById(anotherBook.getId())).isPresent();
         assertThat(commentRepository.findByBookId(anotherBook.getId())).hasSize(1);
 
-        // Act
-        bookService.deleteById(book.getId());
+        // Act - delete book directly through repository (should trigger BookDeleteListener)
+        bookRepository.deleteById(book.getId());
 
         // Assert
         // Book should be deleted
         assertThat(bookRepository.findById(book.getId())).isEmpty();
         
-        // Comments for the deleted book should also be deleted
+        // Comments for the deleted book should also be deleted by BookDeleteListener
         assertThat(commentRepository.findByBookId(book.getId())).isEmpty();
         
         // Other book and its comments should remain unaffected
