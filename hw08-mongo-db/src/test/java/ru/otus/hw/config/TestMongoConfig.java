@@ -49,16 +49,16 @@ public class TestMongoConfig {
         // Check if we're running in CI environment
         boolean isCI = System.getenv("CI") != null && System.getenv("CI").equals("true");
 
-        if (!username.isEmpty() && !password.isEmpty()) {
+        if (isCI) {
+            // In CI environment, always use embedded MongoDB regardless of credentials
+            // Embedded MongoDB will be started automatically by Spring Boot
+            connectionString = String.format("mongodb://%s:%d/%s", host, port > 0 ? port : 27017, database);
+            System.out.println("Using embedded MongoDB in CI environment: " + connectionString);
+        } else if (!username.isEmpty() && !password.isEmpty()) {
             // Use the provided MongoDB credentials (external MongoDB service)
             connectionString = String.format("mongodb://%s:%s@%s:%d/%s?authSource=%s",
                     username, password, host, port, database, authDatabase);
             System.out.println("Using external MongoDB with provided credentials: " + connectionString);
-        } else if (isCI) {
-            // In CI environment without external credentials, use embedded MongoDB
-            // Embedded MongoDB will be started automatically by Spring Boot
-            connectionString = String.format("mongodb://%s:%d/%s", host, port > 0 ? port : 27017, database);
-            System.out.println("Using embedded MongoDB in CI environment: " + connectionString);
         } else {
             // For local testing, use default credentials that match the compose.yaml file
             String defaultUsername = "root";

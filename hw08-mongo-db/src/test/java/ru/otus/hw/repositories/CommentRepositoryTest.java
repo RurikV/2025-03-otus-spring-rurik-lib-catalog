@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.context.annotation.Import;
-import ru.otus.hw.config.TestMongoConfig;
+import ru.otus.hw.config.ConditionalMongoTestConfig;
 import ru.otus.hw.listeners.BookDeleteListener;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
@@ -17,8 +17,8 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("CommentRepository should")
-@DataMongoTest(excludeAutoConfiguration = de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongoAutoConfiguration.class)
-@Import({TestMongoConfig.class, BookDeleteListener.class})
+@DataMongoTest
+@Import({ConditionalMongoTestConfig.class, BookDeleteListener.class})
 class CommentRepositoryTest {
 
     @Autowired
