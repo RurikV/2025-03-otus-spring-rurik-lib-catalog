@@ -50,10 +50,10 @@ public class TestMongoConfig {
         boolean isCI = System.getenv("CI") != null && System.getenv("CI").equals("true");
 
         if (isCI) {
-            // In CI environment, always use embedded MongoDB regardless of credentials
-            // Embedded MongoDB will be started automatically by Spring Boot
+            // In CI environment, use embedded MongoDB without authentication
+            // Embedded MongoDB will be started automatically by Spring Boot with no_auth: true
             connectionString = String.format("mongodb://%s:%d/%s", host, port > 0 ? port : 27017, database);
-            System.out.println("Using embedded MongoDB in CI environment: " + connectionString);
+            System.out.println("Using embedded MongoDB in CI environment (no auth): " + connectionString);
         } else if (!username.isEmpty() && !password.isEmpty()) {
             // Use the provided MongoDB credentials (external MongoDB service)
             connectionString = String.format("mongodb://%s:%s@%s:%d/%s?authSource=%s",
