@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.context.annotation.Import;
-import ru.otus.hw.config.EmbeddedMongoDisabler;
 import ru.otus.hw.config.TestMongoConfig;
+import ru.otus.hw.listeners.BookDeleteListener;
 import ru.otus.hw.models.Genre;
 
 import java.util.List;
@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("GenreRepository should")
 @DataMongoTest(excludeAutoConfiguration = de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongoAutoConfiguration.class)
-@Import({TestMongoConfig.class, EmbeddedMongoDisabler.class})
+@Import({TestMongoConfig.class, BookDeleteListener.class})
 class GenreRepositoryTest {
 
     @Autowired

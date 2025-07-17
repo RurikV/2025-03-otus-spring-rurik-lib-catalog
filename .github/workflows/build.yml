@@ -26,10 +26,10 @@ jobs:
         run: |
           mvn test --no-transfer-progress
         env:
+          CI: true
           SPRING_DATA_MONGODB_DATABASE: test
           DE_FLAPDOODLE_MONGODB_EMBEDDED_VERSION: 4.0.2
           SPRING_MONGODB_EMBEDDED_VERSION: 4.0.2
-          # Do not set CI=true to allow embedded MongoDB to start
 
       - name: Build application
         run: |

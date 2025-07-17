@@ -49,25 +49,24 @@ public class TestMongoConfig {
         // Check if we're running in CI environment
         boolean isCI = System.getenv("CI") != null && System.getenv("CI").equals("true");
 
-        if (isCI && !username.isEmpty() && !password.isEmpty()) {
-            // In CI, use the provided MongoDB credentials (external MongoDB service)
+        if (!username.isEmpty() && !password.isEmpty()) {
+            // Use the provided MongoDB credentials (external MongoDB service)
             connectionString = String.format("mongodb://%s:%s@%s:%d/%s?authSource=%s",
                     username, password, host, port, database, authDatabase);
-            System.out.println("Using external MongoDB in CI environment: " + connectionString);
+            System.out.println("Using external MongoDB with provided credentials: " + connectionString);
+        } else if (isCI) {
+            // In CI environment without external credentials, use embedded MongoDB
+            // Embedded MongoDB will be started automatically by Spring Boot
+            connectionString = String.format("mongodb://%s:%d/%s", host, port > 0 ? port : 27017, database);
+            System.out.println("Using embedded MongoDB in CI environment: " + connectionString);
         } else {
-            // For local testing or CI without external MongoDB credentials, use embedded MongoDB
-            // Use default credentials that match the compose.yaml file
+            // For local testing, use default credentials that match the compose.yaml file
             String defaultUsername = "root";
             String defaultPassword = "example";
             int defaultPort = 27017;
             connectionString = String.format("mongodb://%s:%s@%s:%d/%s?authSource=%s",
                     defaultUsername, defaultPassword, host, defaultPort, database, authDatabase);
-            
-            if (isCI) {
-                System.out.println("Using embedded MongoDB in CI environment (no external credentials provided): " + connectionString);
-            } else {
-                System.out.println("Using embedded MongoDB for local testing: " + connectionString);
-            }
+            System.out.println("Using external MongoDB for local testing: " + connectionString);
         }
 
         MongoClientSettings settings = MongoClientSettings.builder()

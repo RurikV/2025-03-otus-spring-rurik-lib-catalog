@@ -1,12 +1,14 @@
 package ru.otus.hw.repositories;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.context.annotation.Import;
-import ru.otus.hw.config.EmbeddedMongoDisabler;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.otus.hw.config.TestMongoConfig;
+import ru.otus.hw.listeners.BookDeleteListener;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Genre;
@@ -16,8 +18,8 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("BookRepository should")
-@DataMongoTest
-@Import({TestMongoConfig.class, EmbeddedMongoDisabler.class})
+@DataMongoTest(excludeAutoConfiguration = de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongoAutoConfiguration.class)
+@Import({TestMongoConfig.class, BookDeleteListener.class})
 class BookRepositoryTest {
 
     @Autowired
@@ -28,6 +30,17 @@ class BookRepositoryTest {
 
     @Autowired
     private GenreRepository genreRepository;
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
+    @BeforeEach
+    void setUp() {
+        // Clear all collections before each test to ensure test isolation
+        mongoTemplate.getCollectionNames().forEach(collectionName -> {
+            mongoTemplate.dropCollection(collectionName);
+        });
+    }
 
     @DisplayName("save book correctly")
     @Test
@@ -60,29 +73,19 @@ class BookRepositoryTest {
         Genre genre = genreRepository.save(new Genre(null, "Test Genre"));
         Book book1 = new Book(null, "Test Book 1", author, List.of(genre));
         Book book2 = new Book(null, "Test Book 2", author, List.of(genre));
-        bookRepository.saveAll(List.of(book1, book2));
+        List<Book> savedBooks = bookRepository.saveAll(List.of(book1, book2));
 
         // Act
-        List<Book> books = bookRepository.findAll();
-        // Set IDs for expected books to match the actual books
-        List<Book> savedBooks = books.stream()
-                .filter(b -> b.getTitle().equals(book1.getTitle()) || b.getTitle().equals(book2.getTitle()))
-                .toList();
-        if (savedBooks.size() >= 2) {
-            book1.setId(savedBooks.get(0).getId());
-            book2.setId(savedBooks.get(1).getId());
-        }
+        List<Book> allBooks = bookRepository.findAll();
 
         // Assert
-        assertThat(books).isNotEmpty();
-        assertThat(books.size()).isGreaterThanOrEqualTo(2);
+        assertThat(allBooks).isNotEmpty();
+        assertThat(allBooks).hasSize(2);
 
-        if (savedBooks.size() >= 2) {
-            // Use recursive comparison to verify the books exist in the result
-            assertThat(books)
-                .usingRecursiveFieldByFieldElementComparator()
-                .contains(book1, book2);
-        }
+        // Use recursive comparison to verify the saved books exist in the result
+        assertThat(allBooks)
+            .usingRecursiveFieldByFieldElementComparator()
+            .containsExactlyInAnyOrderElementsOf(savedBooks);
     }
 
     @DisplayName("delete book by id")
