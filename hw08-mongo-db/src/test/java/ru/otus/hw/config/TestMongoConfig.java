@@ -50,19 +50,24 @@ public class TestMongoConfig {
         boolean isCI = System.getenv("CI") != null && System.getenv("CI").equals("true");
 
         if (isCI && !username.isEmpty() && !password.isEmpty()) {
-            // In CI, use the provided MongoDB credentials
+            // In CI, use the provided MongoDB credentials (external MongoDB service)
             connectionString = String.format("mongodb://%s:%s@%s:%d/%s?authSource=%s",
                     username, password, host, port, database, authDatabase);
             System.out.println("Using external MongoDB in CI environment: " + connectionString);
         } else {
-            // Locally, use the embedded MongoDB with default credentials
-            // For local testing, use a fixed port (27017) instead of random port (0)
+            // For local testing or CI without external MongoDB credentials, use embedded MongoDB
+            // Use default credentials that match the compose.yaml file
             String defaultUsername = "root";
             String defaultPassword = "example";
             int defaultPort = 27017;
             connectionString = String.format("mongodb://%s:%s@%s:%d/%s?authSource=%s",
                     defaultUsername, defaultPassword, host, defaultPort, database, authDatabase);
-            System.out.println("Using embedded MongoDB for local testing: " + connectionString);
+            
+            if (isCI) {
+                System.out.println("Using embedded MongoDB in CI environment (no external credentials provided): " + connectionString);
+            } else {
+                System.out.println("Using embedded MongoDB for local testing: " + connectionString);
+            }
         }
 
         MongoClientSettings settings = MongoClientSettings.builder()
