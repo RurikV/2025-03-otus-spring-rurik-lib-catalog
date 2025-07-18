@@ -7,13 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
-import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Comment;
-import ru.otus.hw.models.Genre;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -33,8 +28,6 @@ class JpaCommentRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        Author author = em.find(Author.class, 1L);
-        List<Genre> genres = List.of(em.find(Genre.class, 1L), em.find(Genre.class, 2L));
         book = em.find(Book.class, 1L);
         comment = em.find(Comment.class, 1L);
     }
@@ -61,13 +54,19 @@ class JpaCommentRepositoryTest {
     @DisplayName("должен сохранять новый комментарий")
     @Test
     void shouldSaveNewComment() {
+        // Arrange
         var expectedComment = new Comment(0, "New Comment", book);
+
+        // Act
         var returnedComment = repository.save(expectedComment);
+        var foundComment = repository.findById(returnedComment.getId());
+
+        // Assert
         assertThat(returnedComment).isNotNull()
                 .matches(c -> c.getId() > 0)
                 .usingRecursiveComparison().ignoringExpectedNullFields().isEqualTo(expectedComment);
 
-        assertThat(repository.findById(returnedComment.getId()))
+        assertThat(foundComment)
                 .isPresent()
                 .get()
                 .usingRecursiveComparison()
@@ -77,19 +76,25 @@ class JpaCommentRepositoryTest {
     @DisplayName("должен сохранять измененный комментарий")
     @Test
     void shouldSaveUpdatedComment() {
+        // Arrange
         var expectedComment = new Comment(comment.getId(), "Updated Comment", book);
 
-        assertThat(repository.findById(expectedComment.getId()))
+        // Act
+        var originalComment = repository.findById(expectedComment.getId());
+        var returnedComment = repository.save(expectedComment);
+        var foundComment = repository.findById(returnedComment.getId());
+
+        // Assert
+        assertThat(originalComment)
                 .isPresent()
                 .get()
                 .isNotEqualTo(expectedComment);
 
-        var returnedComment = repository.save(expectedComment);
         assertThat(returnedComment).isNotNull()
                 .matches(c -> c.getId() > 0)
                 .usingRecursiveComparison().ignoringExpectedNullFields().isEqualTo(expectedComment);
 
-        assertThat(repository.findById(returnedComment.getId()))
+        assertThat(foundComment)
                 .isPresent()
                 .get()
                 .usingRecursiveComparison()
@@ -99,9 +104,17 @@ class JpaCommentRepositoryTest {
     @DisplayName("должен удалять комментарий по id ")
     @Test
     void shouldDeleteComment() {
-        assertThat(repository.findById(comment.getId())).isPresent();
-        repository.deleteById(comment.getId());
+        // Arrange
+        long commentId = comment.getId();
+
+        // Act
+        var commentBeforeDelete = repository.findById(commentId);
+        repository.deleteById(commentId);
         em.flush();
-        assertThat(repository.findById(comment.getId())).isEmpty();
+        var commentAfterDelete = repository.findById(commentId);
+
+        // Assert
+        assertThat(commentBeforeDelete).isPresent();
+        assertThat(commentAfterDelete).isEmpty();
     }
 }
