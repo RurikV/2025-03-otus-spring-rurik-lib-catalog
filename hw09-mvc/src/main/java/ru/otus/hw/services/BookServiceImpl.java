@@ -11,7 +11,6 @@ import ru.otus.hw.repositories.BookRepository;
 import ru.otus.hw.repositories.GenreRepository;
 
 import java.util.List;
-import java.util.Set;
 
 import static org.springframework.util.CollectionUtils.isEmpty;
 
@@ -37,33 +36,42 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book create(BookCreateDto bookCreateDto) {
-        return save(null, bookCreateDto.getTitle(), bookCreateDto.getAuthorId(), bookCreateDto.getGenreIds());
+        if (isEmpty(bookCreateDto.getGenreIds())) {
+            throw new IllegalArgumentException("Genres ids must not be null");
+        }
+
+        var author = authorRepository.findById(bookCreateDto.getAuthorId())
+                .orElseThrow(() -> new EntityNotFoundException("Author with id %s not found".formatted(bookCreateDto.getAuthorId())));
+        var genres = genreRepository.findAllByIds(bookCreateDto.getGenreIds());
+        if (isEmpty(genres) || bookCreateDto.getGenreIds().size() != genres.size()) {
+            throw new EntityNotFoundException("One or all genres with ids %s not found".formatted(bookCreateDto.getGenreIds()));
+        }
+
+        var book = new Book(null, bookCreateDto.getTitle(), author, genres);
+        return bookRepository.save(book);
     }
 
     @Override
     public Book update(BookUpdateDto bookUpdateDto) {
         findById(bookUpdateDto.getId());
-        return save(bookUpdateDto.getId(), bookUpdateDto.getTitle(), bookUpdateDto.getAuthorId(), bookUpdateDto.getGenreIds());
+        
+        if (isEmpty(bookUpdateDto.getGenreIds())) {
+            throw new IllegalArgumentException("Genres ids must not be null");
+        }
+
+        var author = authorRepository.findById(bookUpdateDto.getAuthorId())
+                .orElseThrow(() -> new EntityNotFoundException("Author with id %s not found".formatted(bookUpdateDto.getAuthorId())));
+        var genres = genreRepository.findAllByIds(bookUpdateDto.getGenreIds());
+        if (isEmpty(genres) || bookUpdateDto.getGenreIds().size() != genres.size()) {
+            throw new EntityNotFoundException("One or all genres with ids %s not found".formatted(bookUpdateDto.getGenreIds()));
+        }
+
+        var book = new Book(bookUpdateDto.getId(), bookUpdateDto.getTitle(), author, genres);
+        return bookRepository.save(book);
     }
 
     @Override
     public void deleteById(String id) {
         bookRepository.deleteById(id);
-    }
-
-    private Book save(String id, String title, String authorId, Set<String> genresIds) {
-        if (isEmpty(genresIds)) {
-            throw new IllegalArgumentException("Genres ids must not be null");
-        }
-
-        var author = authorRepository.findById(authorId)
-                .orElseThrow(() -> new EntityNotFoundException("Author with id %s not found".formatted(authorId)));
-        var genres = genreRepository.findAllByIds(genresIds);
-        if (isEmpty(genres) || genresIds.size() != genres.size()) {
-            throw new EntityNotFoundException("One or all genres with ids %s not found".formatted(genresIds));
-        }
-
-        var book = new Book(id, title, author, genres);
-        return bookRepository.save(book);
     }
 }
