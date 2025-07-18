@@ -2,6 +2,8 @@ package ru.otus.hw.services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.otus.hw.dto.CommentCreateDto;
+import ru.otus.hw.dto.CommentUpdateDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.models.Comment;
 import ru.otus.hw.repositories.BookRepository;
@@ -37,29 +39,29 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public Comment insert(String text, String bookId) {
-        if (!hasText(text)) {
+    public Comment create(CommentCreateDto commentCreateDto) {
+        if (!hasText(commentCreateDto.getText())) {
             throw new IllegalArgumentException("Comment text must not be null or empty");
         }
-        if (!hasText(bookId)) {
+        if (!hasText(commentCreateDto.getBookId())) {
             throw new IllegalArgumentException("Book id must not be null or empty");
         }
         
-        return save(null, text, bookId);
+        return save(null, commentCreateDto.getText(), commentCreateDto.getBookId());
     }
 
     @Override
-    public Comment update(String id, String text) {
-        if (!hasText(id)) {
+    public Comment update(CommentUpdateDto commentUpdateDto) {
+        if (!hasText(commentUpdateDto.getId())) {
             throw new IllegalArgumentException("Comment id must not be null or empty");
         }
-        if (!hasText(text)) {
+        if (!hasText(commentUpdateDto.getText())) {
             throw new IllegalArgumentException("Comment text must not be null or empty");
         }
         
-        var comment = commentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Comment with id %s not found".formatted(id)));
-        return save(id, text, comment.getBook().getId());
+        var comment = commentRepository.findById(commentUpdateDto.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Comment with id %s not found".formatted(commentUpdateDto.getId())));
+        return save(commentUpdateDto.getId(), commentUpdateDto.getText(), comment.getBook().getId());
     }
 
     @Override

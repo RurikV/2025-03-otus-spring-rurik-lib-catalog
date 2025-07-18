@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import ru.otus.hw.dto.CommentCreateDto;
+import ru.otus.hw.dto.CommentUpdateDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.services.BookService;
 import ru.otus.hw.services.CommentService;
@@ -33,7 +35,8 @@ public class CommentController {
     @PostMapping("/books/{bookId}/comments")
     public String saveComment(@PathVariable String bookId,
                              @RequestParam String text) {
-        commentService.insert(text, bookId);
+        var createDto = new CommentCreateDto(text, bookId);
+        commentService.create(createDto);
         return "redirect:/books/" + bookId;
     }
 
@@ -53,7 +56,8 @@ public class CommentController {
                                @RequestParam String text) {
         try {
             var comment = commentService.findById(id);
-            commentService.update(id, text);
+            var updateDto = new CommentUpdateDto(id, text);
+            commentService.update(updateDto);
             return "redirect:/books/" + comment.getBook().getId();
         } catch (EntityNotFoundException e) {
             return "redirect:/";

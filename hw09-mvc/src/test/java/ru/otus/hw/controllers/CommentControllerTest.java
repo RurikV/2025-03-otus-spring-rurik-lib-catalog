@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.otus.hw.dto.CommentCreateDto;
+import ru.otus.hw.dto.CommentUpdateDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
@@ -69,14 +71,15 @@ class CommentControllerTest {
         var book = new Book("1", "Book Title", author, List.of(genre));
         var comment = new Comment("1", "Comment text", book);
         
-        given(commentService.insert("Comment text", "1")).willReturn(comment);
+        var createDto = new CommentCreateDto("Comment text", "1");
+        given(commentService.create(createDto)).willReturn(comment);
 
         mvc.perform(post("/books/1/comments")
                 .param("text", "Comment text"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/books/1"));
 
-        verify(commentService).insert("Comment text", "1");
+        verify(commentService).create(createDto);
     }
 
     @Test
@@ -115,14 +118,15 @@ class CommentControllerTest {
         var comment = new Comment("1", "Updated comment text", book);
         
         given(commentService.findById("1")).willReturn(comment);
-        given(commentService.update("1", "Updated comment text")).willReturn(comment);
+        var updateDto = new CommentUpdateDto("1", "Updated comment text");
+        given(commentService.update(updateDto)).willReturn(comment);
 
         mvc.perform(post("/comments/1")
                 .param("text", "Updated comment text"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/books/1"));
 
-        verify(commentService).update("1", "Updated comment text");
+        verify(commentService).update(updateDto);
     }
 
     @Test
