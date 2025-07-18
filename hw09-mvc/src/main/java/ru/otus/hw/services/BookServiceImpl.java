@@ -2,6 +2,8 @@ package ru.otus.hw.services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.otus.hw.dto.BookCreateDto;
+import ru.otus.hw.dto.BookUpdateDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.repositories.AuthorRepository;
@@ -34,13 +36,13 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public Book insert(String title, String authorId, Set<String> genresIds) {
-        return save(null, title, authorId, genresIds);
+    public Book create(BookCreateDto bookCreateDto) {
+        return save(null, bookCreateDto.getTitle(), bookCreateDto.getAuthorId(), bookCreateDto.getGenreIds());
     }
 
     @Override
-    public Book update(String id, String title, String authorId, Set<String> genresIds) {
-        return save(id, title, authorId, genresIds);
+    public Book update(BookUpdateDto bookUpdateDto) {
+        return save(bookUpdateDto.getId(), bookUpdateDto.getTitle(), bookUpdateDto.getAuthorId(), bookUpdateDto.getGenreIds());
     }
 
     @Override

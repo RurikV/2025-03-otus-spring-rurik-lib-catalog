@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import ru.otus.hw.dto.BookCreateDto;
 import ru.otus.hw.dto.BookDto;
+import ru.otus.hw.dto.BookUpdateDto;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.services.AuthorService;
 import ru.otus.hw.services.BookService;
@@ -99,7 +101,8 @@ public class BookController {
         if (genreIds == null) {
             genreIds = Set.of();
         }
-        bookService.insert(bookDto.getTitle(), bookDto.getAuthorId(), genreIds);
+        BookCreateDto createDto = new BookCreateDto(bookDto.getTitle(), bookDto.getAuthorId(), genreIds);
+        bookService.create(createDto);
         return "redirect:/";
     }
 
@@ -139,7 +142,8 @@ public class BookController {
         if (genreIds == null) {
             genreIds = Set.of();
         }
-        bookService.update(id, bookDto.getTitle(), bookDto.getAuthorId(), genreIds);
+        BookUpdateDto updateDto = new BookUpdateDto(id, bookDto.getTitle(), bookDto.getAuthorId(), genreIds);
+        bookService.update(updateDto);
         return "redirect:/";
     }
 

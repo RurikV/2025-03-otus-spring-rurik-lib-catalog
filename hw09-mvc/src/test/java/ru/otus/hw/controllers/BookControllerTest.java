@@ -11,6 +11,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.otus.hw.dto.BookCreateDto;
+import ru.otus.hw.dto.BookUpdateDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
@@ -155,8 +157,9 @@ class BookControllerTest {
         var author = new Author("1", "Author Name");
         var genre = new Genre("1", "Genre Name");
         var book = new Book("1", "Book Title", author, List.of(genre));
+        var createDto = new BookCreateDto("Book Title", "1", Set.of("1"));
         
-        given(bookService.insert("Book Title", "1", Set.of("1"))).willReturn(book);
+        given(bookService.create(createDto)).willReturn(book);
 
         mvc.perform(post("/books")
                 .param("title", "Book Title")
@@ -165,7 +168,7 @@ class BookControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/"));
 
-        verify(bookService).insert("Book Title", "1", Set.of("1"));
+        verify(bookService).create(createDto);
     }
 
     @Test
@@ -173,8 +176,9 @@ class BookControllerTest {
     void shouldCreateNewBookWithoutGenresAndRedirectToHome() throws Exception {
         var author = new Author("1", "Author Name");
         var book = new Book("1", "Book Title", author, List.of());
+        var createDto = new BookCreateDto("Book Title", "1", Set.of());
         
-        given(bookService.insert("Book Title", "1", Set.of())).willReturn(book);
+        given(bookService.create(createDto)).willReturn(book);
 
         mvc.perform(post("/books")
                 .param("title", "Book Title")
@@ -182,7 +186,7 @@ class BookControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/"));
 
-        verify(bookService).insert("Book Title", "1", Set.of());
+        verify(bookService).create(createDto);
     }
 
     @Test
@@ -191,8 +195,9 @@ class BookControllerTest {
         var author = new Author("1", "Author Name");
         var genre = new Genre("1", "Genre Name");
         var book = new Book("1", "Updated Title", author, List.of(genre));
+        var updateDto = new BookUpdateDto("1", "Updated Title", "1", Set.of("1"));
         
-        given(bookService.update("1", "Updated Title", "1", Set.of("1"))).willReturn(book);
+        given(bookService.update(updateDto)).willReturn(book);
 
         mvc.perform(post("/books/1")
                 .param("title", "Updated Title")
@@ -201,7 +206,7 @@ class BookControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/"));
 
-        verify(bookService).update("1", "Updated Title", "1", Set.of("1"));
+        verify(bookService).update(updateDto);
     }
 
     @Test
