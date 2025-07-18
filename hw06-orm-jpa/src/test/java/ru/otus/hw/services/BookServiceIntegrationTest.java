@@ -85,21 +85,21 @@ class BookServiceIntegrationTest {
                 new Book(1L, "BookTitle_1",
                         new Author(1L, "Author_1"),
                         List.of(new Genre(1L, "Genre_1"), new Genre(2L, "Genre_2")),
-                        actualBooks.get(0).getComments()),
+                        List.of()), // комментарии не загружаются для findAll
                 new Book(2L, "BookTitle_2",
                         new Author(2L, "Author_2"),
                         List.of(new Genre(3L, "Genre_3"), new Genre(4L, "Genre_4")),
-                        actualBooks.get(1).getComments()),
+                        List.of()), // комментарии не загружаются для findAll
                 new Book(3L, "BookTitle_3",
                         new Author(3L, "Author_3"),
                         List.of(new Genre(5L, "Genre_5"), new Genre(6L, "Genre_6")),
-                        actualBooks.get(2).getComments())
+                        List.of()) // комментарии не загружаются для findAll
         );
 
         // Assert
         assertThat(actualBooks).isNotNull().hasSize(3);
         assertThat(actualBooks).usingRecursiveComparison()
-                .ignoringFields("comments.book") // избегаем циклических ссылок
+                .ignoringFields("comments") // комментарии не загружаются для findAll
                 .isEqualTo(expectedBooks);
     }
 
