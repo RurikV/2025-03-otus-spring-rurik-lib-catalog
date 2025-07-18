@@ -42,6 +42,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book update(BookUpdateDto bookUpdateDto) {
+        findById(bookUpdateDto.getId());
         return save(bookUpdateDto.getId(), bookUpdateDto.getTitle(), bookUpdateDto.getAuthorId(), bookUpdateDto.getGenreIds());
     }
 
