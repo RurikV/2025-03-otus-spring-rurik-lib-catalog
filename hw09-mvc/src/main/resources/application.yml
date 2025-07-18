@@ -11,6 +11,3 @@ spring:
     basename: messages
     encoding: UTF-8
     cache-duration: 3600
-  web:
-    locale: en
-    locale-resolver: fixed
