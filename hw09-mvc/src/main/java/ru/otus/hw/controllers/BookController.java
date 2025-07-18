@@ -44,14 +44,10 @@ public class BookController {
 
     @GetMapping("/books/{id}")
     public String viewBook(@PathVariable String id, Model model) {
-        try {
-            var book = bookService.findById(id);
-            model.addAttribute("book", book);
-            model.addAttribute("comments", commentService.findByBookId(id));
-            return "book/view";
-        } catch (Exception e) {
-            return "redirect:/";
-        }
+        var book = bookService.findById(id);
+        model.addAttribute("book", book);
+        model.addAttribute("comments", commentService.findByBookId(id));
+        return "book/view";
     }
 
     @GetMapping("/books/new")
@@ -64,15 +60,11 @@ public class BookController {
 
     @GetMapping("/books/{id}/edit")
     public String editBookForm(@PathVariable String id, Model model) {
-        try {
-            var book = bookService.findById(id);
-            model.addAttribute("book", book);
-            model.addAttribute("authors", authorService.findAll());
-            model.addAttribute("genres", genreService.findAll());
-            return "book/form";
-        } catch (Exception e) {
-            return "redirect:/";
-        }
+        var book = bookService.findById(id);
+        model.addAttribute("book", book);
+        model.addAttribute("authors", authorService.findAll());
+        model.addAttribute("genres", genreService.findAll());
+        return "book/form";
     }
 
     @PostMapping("/books")
@@ -101,11 +93,7 @@ public class BookController {
         String validationError = validateBookDto(bookDto);
         if (validationError != null) {
             setupFormModelWithBookId(model, id, validationError);
-            if (model.containsAttribute("error")) {
-                return "book/form";
-            } else {
-                return "redirect:/";
-            }
+            return "book/form";
         }
         
         Set<String> genreIds = bookDto.getGenreIds();
@@ -119,13 +107,9 @@ public class BookController {
 
     @GetMapping("/books/{id}/delete")
     public String deleteBookConfirm(@PathVariable String id, Model model) {
-        try {
-            var book = bookService.findById(id);
-            model.addAttribute("book", book);
-            return "book/delete";
-        } catch (Exception e) {
-            return "redirect:/";
-        }
+        var book = bookService.findById(id);
+        model.addAttribute("book", book);
+        return "book/delete";
     }
 
     @PostMapping("/books/{id}/delete")
@@ -152,14 +136,7 @@ public class BookController {
     }
 
     private void setupFormModelWithBookId(Model model, String id, String error) {
-        try {
-            var book = bookService.findById(id);
-            setupFormModel(model, book, error);
-        } catch (Exception e) {
-            // If a book not found, we don't set an error attribute, so we can redirect
-            // This allows the calling method to handle the redirect appropriately
-            @SuppressWarnings("unused")
-            var ignored = e.getMessage();
-        }
+        var book = bookService.findById(id);
+        setupFormModel(model, book, error);
     }
 }

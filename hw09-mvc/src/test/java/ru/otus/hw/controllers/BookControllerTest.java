@@ -96,13 +96,12 @@ class BookControllerTest {
     }
 
     @Test
-    @DisplayName("redirect to home when book not found for view")
-    void shouldRedirectToHomeWhenBookNotFoundForView() throws Exception {
+    @DisplayName("return 404 when book not found for view")
+    void shouldReturn404WhenBookNotFoundForView() throws Exception {
         given(bookService.findById("1")).willThrow(new EntityNotFoundException("Book with id 1 not found"));
 
         mvc.perform(get("/books/1"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/"));
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -142,13 +141,12 @@ class BookControllerTest {
     }
 
     @Test
-    @DisplayName("redirect to home when book not found for edit")
-    void shouldRedirectToHomeWhenBookNotFoundForEdit() throws Exception {
+    @DisplayName("return 404 when book not found for edit")
+    void shouldReturn404WhenBookNotFoundForEdit() throws Exception {
         given(bookService.findById("1")).willThrow(new EntityNotFoundException("Book with id 1 not found"));
 
         mvc.perform(get("/books/1/edit"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/"));
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -225,13 +223,12 @@ class BookControllerTest {
     }
 
     @Test
-    @DisplayName("redirect to home when book not found for delete confirmation")
-    void shouldRedirectToHomeWhenBookNotFoundForDeleteConfirmation() throws Exception {
+    @DisplayName("return 404 when book not found for delete confirmation")
+    void shouldReturn404WhenBookNotFoundForDeleteConfirmation() throws Exception {
         given(bookService.findById("1")).willThrow(new EntityNotFoundException("Book with id 1 not found"));
 
         mvc.perform(get("/books/1/delete"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/"));
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -242,6 +239,70 @@ class BookControllerTest {
                 .andExpect(redirectedUrl("/"));
 
         verify(bookService).deleteById("1");
+    }
+
+    @Test
+    @DisplayName("return 404 when author not found during book creation")
+    void shouldReturn404WhenAuthorNotFoundDuringBookCreation() throws Exception {
+        var createDto = new BookCreateDto("Book Title", "nonexistent-author", Set.of("1"));
+        
+        given(bookService.create(createDto)).willThrow(new EntityNotFoundException("Author with id nonexistent-author not found"));
+
+        mvc.perform(post("/books")
+                .param("title", "Book Title")
+                .param("authorId", "nonexistent-author")
+                .param("genreIds", "1"))
+                .andExpect(status().isNotFound());
+
+        verify(bookService).create(createDto);
+    }
+
+    @Test
+    @DisplayName("return 404 when genre not found during book creation")
+    void shouldReturn404WhenGenreNotFoundDuringBookCreation() throws Exception {
+        var createDto = new BookCreateDto("Book Title", "1", Set.of("nonexistent-genre"));
+        
+        given(bookService.create(createDto)).willThrow(new EntityNotFoundException("One or all genres with ids [nonexistent-genre] not found"));
+
+        mvc.perform(post("/books")
+                .param("title", "Book Title")
+                .param("authorId", "1")
+                .param("genreIds", "nonexistent-genre"))
+                .andExpect(status().isNotFound());
+
+        verify(bookService).create(createDto);
+    }
+
+    @Test
+    @DisplayName("return 404 when author not found during book update")
+    void shouldReturn404WhenAuthorNotFoundDuringBookUpdate() throws Exception {
+        var updateDto = new BookUpdateDto("1", "Updated Title", "nonexistent-author", Set.of("1"));
+        
+        given(bookService.update(updateDto)).willThrow(new EntityNotFoundException("Author with id nonexistent-author not found"));
+
+        mvc.perform(post("/books/1")
+                .param("title", "Updated Title")
+                .param("authorId", "nonexistent-author")
+                .param("genreIds", "1"))
+                .andExpect(status().isNotFound());
+
+        verify(bookService).update(updateDto);
+    }
+
+    @Test
+    @DisplayName("return 404 when genre not found during book update")
+    void shouldReturn404WhenGenreNotFoundDuringBookUpdate() throws Exception {
+        var updateDto = new BookUpdateDto("1", "Updated Title", "1", Set.of("nonexistent-genre"));
+        
+        given(bookService.update(updateDto)).willThrow(new EntityNotFoundException("One or all genres with ids [nonexistent-genre] not found"));
+
+        mvc.perform(post("/books/1")
+                .param("title", "Updated Title")
+                .param("authorId", "1")
+                .param("genreIds", "nonexistent-genre"))
+                .andExpect(status().isNotFound());
+
+        verify(bookService).update(updateDto);
     }
 
     @TestConfiguration
