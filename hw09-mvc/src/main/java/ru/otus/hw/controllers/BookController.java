@@ -4,10 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.services.AuthorService;
 import ru.otus.hw.services.BookService;
@@ -71,13 +72,11 @@ public class BookController {
     }
 
     @PostMapping("/books")
-    public String saveBook(@RequestParam String title,
-                          @RequestParam String authorId,
-                          @RequestParam(required = false) Set<String> genreIds,
+    public String saveBook(@ModelAttribute BookDto bookDto,
                           RedirectAttributes redirectAttributes,
                           Model model) {
         // Validate title
-        if (title == null || title.trim().isEmpty()) {
+        if (bookDto.getTitle() == null || bookDto.getTitle().trim().isEmpty()) {
             model.addAttribute("book", new Book());
             model.addAttribute("authors", authorService.findAll());
             model.addAttribute("genres", genreService.findAll());
@@ -86,7 +85,7 @@ public class BookController {
         }
         
         // Validate authorId
-        if (authorId == null || authorId.trim().isEmpty()) {
+        if (bookDto.getAuthorId() == null || bookDto.getAuthorId().trim().isEmpty()) {
             model.addAttribute("book", new Book());
             model.addAttribute("authors", authorService.findAll());
             model.addAttribute("genres", genreService.findAll());
@@ -94,21 +93,20 @@ public class BookController {
             return "book/form";
         }
         
+        Set<String> genreIds = bookDto.getGenreIds();
         if (genreIds == null) {
             genreIds = Set.of();
         }
-        bookService.insert(title, authorId, genreIds);
+        bookService.insert(bookDto.getTitle(), bookDto.getAuthorId(), genreIds);
         return "redirect:/";
     }
 
     @PostMapping("/books/{id}")
     public String updateBook(@PathVariable String id,
-                            @RequestParam String title,
-                            @RequestParam String authorId,
-                            @RequestParam(required = false) Set<String> genreIds,
+                            @ModelAttribute BookDto bookDto,
                             Model model) {
         // Validate title
-        if (title == null || title.trim().isEmpty()) {
+        if (bookDto.getTitle() == null || bookDto.getTitle().trim().isEmpty()) {
             var book = bookService.findById(id);
             if (book.isEmpty()) {
                 return "redirect:/";
@@ -121,7 +119,7 @@ public class BookController {
         }
         
         // Validate authorId
-        if (authorId == null || authorId.trim().isEmpty()) {
+        if (bookDto.getAuthorId() == null || bookDto.getAuthorId().trim().isEmpty()) {
             var book = bookService.findById(id);
             if (book.isEmpty()) {
                 return "redirect:/";
@@ -133,10 +131,11 @@ public class BookController {
             return "book/form";
         }
         
+        Set<String> genreIds = bookDto.getGenreIds();
         if (genreIds == null) {
             genreIds = Set.of();
         }
-        bookService.update(id, title, authorId, genreIds);
+        bookService.update(id, bookDto.getTitle(), bookDto.getAuthorId(), genreIds);
         return "redirect:/";
     }
 
