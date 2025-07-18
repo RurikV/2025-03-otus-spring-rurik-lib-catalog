@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Comment;
@@ -21,7 +22,6 @@ import ru.otus.hw.services.CommentService;
 import ru.otus.hw.services.GenreService;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.mockito.BDDMockito.given;
@@ -83,7 +83,7 @@ class BookControllerTest {
         var book = new Book("1", "Book Title", author, List.of(genre));
         var comment = new Comment("1", "Comment text", book);
         
-        given(bookService.findById("1")).willReturn(Optional.of(book));
+        given(bookService.findById("1")).willReturn(book);
         given(commentService.findByBookId("1")).willReturn(List.of(comment));
 
         mvc.perform(get("/books/1"))
@@ -96,7 +96,7 @@ class BookControllerTest {
     @Test
     @DisplayName("redirect to home when book not found for view")
     void shouldRedirectToHomeWhenBookNotFoundForView() throws Exception {
-        given(bookService.findById("1")).willReturn(Optional.empty());
+        given(bookService.findById("1")).willThrow(new EntityNotFoundException("Book with id 1 not found"));
 
         mvc.perform(get("/books/1"))
                 .andExpect(status().is3xxRedirection())
@@ -127,7 +127,7 @@ class BookControllerTest {
         var genre = new Genre("1", "Genre Name");
         var book = new Book("1", "Book Title", author, List.of(genre));
         
-        given(bookService.findById("1")).willReturn(Optional.of(book));
+        given(bookService.findById("1")).willReturn(book);
         given(authorService.findAll()).willReturn(List.of(author));
         given(genreService.findAll()).willReturn(List.of(genre));
 
@@ -142,7 +142,7 @@ class BookControllerTest {
     @Test
     @DisplayName("redirect to home when book not found for edit")
     void shouldRedirectToHomeWhenBookNotFoundForEdit() throws Exception {
-        given(bookService.findById("1")).willReturn(Optional.empty());
+        given(bookService.findById("1")).willThrow(new EntityNotFoundException("Book with id 1 not found"));
 
         mvc.perform(get("/books/1/edit"))
                 .andExpect(status().is3xxRedirection())
@@ -211,7 +211,7 @@ class BookControllerTest {
         var genre = new Genre("1", "Genre Name");
         var book = new Book("1", "Book Title", author, List.of(genre));
         
-        given(bookService.findById("1")).willReturn(Optional.of(book));
+        given(bookService.findById("1")).willReturn(book);
 
         mvc.perform(get("/books/1/delete"))
                 .andExpect(status().isOk())
@@ -222,7 +222,7 @@ class BookControllerTest {
     @Test
     @DisplayName("redirect to home when book not found for delete confirmation")
     void shouldRedirectToHomeWhenBookNotFoundForDeleteConfirmation() throws Exception {
-        given(bookService.findById("1")).willReturn(Optional.empty());
+        given(bookService.findById("1")).willThrow(new EntityNotFoundException("Book with id 1 not found"));
 
         mvc.perform(get("/books/1/delete"))
                 .andExpect(status().is3xxRedirection())

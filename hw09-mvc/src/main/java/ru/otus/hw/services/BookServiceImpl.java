@@ -9,7 +9,6 @@ import ru.otus.hw.repositories.BookRepository;
 import ru.otus.hw.repositories.GenreRepository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -24,8 +23,9 @@ public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
 
     @Override
-    public Optional<Book> findById(String id) {
-        return bookRepository.findById(id);
+    public Book findById(String id) {
+        return bookRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Book with id %s not found".formatted(id)));
     }
 
     @Override

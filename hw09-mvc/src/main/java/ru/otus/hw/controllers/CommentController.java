@@ -20,12 +20,13 @@ public class CommentController {
 
     @GetMapping("/books/{bookId}/comments/new")
     public String newCommentForm(@PathVariable String bookId, Model model) {
-        var book = bookService.findById(bookId);
-        if (book.isEmpty()) {
+        try {
+            var book = bookService.findById(bookId);
+            model.addAttribute("book", book);
+            return "comment/form";
+        } catch (Exception e) {
             return "redirect:/";
         }
-        model.addAttribute("book", book.get());
-        return "comment/form";
     }
 
     @PostMapping("/books/{bookId}/comments")

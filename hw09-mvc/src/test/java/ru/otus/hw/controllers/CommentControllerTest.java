@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Comment;
@@ -42,7 +43,7 @@ class CommentControllerTest {
         var genre = new Genre("1", "Genre Name");
         var book = new Book("1", "Book Title", author, List.of(genre));
         
-        given(bookService.findById("1")).willReturn(Optional.of(book));
+        given(bookService.findById("1")).willReturn(book);
 
         mvc.perform(get("/books/1/comments/new"))
                 .andExpect(status().isOk())
@@ -54,7 +55,7 @@ class CommentControllerTest {
     @Test
     @DisplayName("redirect to home when book not found for new comment form")
     void shouldRedirectToHomeWhenBookNotFoundForNewCommentForm() throws Exception {
-        given(bookService.findById("1")).willReturn(Optional.empty());
+        given(bookService.findById("1")).willThrow(new EntityNotFoundException("Book with id 1 not found"));
 
         mvc.perform(get("/books/1/comments/new"))
                 .andExpect(status().is3xxRedirection())

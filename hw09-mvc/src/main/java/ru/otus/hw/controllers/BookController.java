@@ -42,13 +42,14 @@ public class BookController {
 
     @GetMapping("/books/{id}")
     public String viewBook(@PathVariable String id, Model model) {
-        var book = bookService.findById(id);
-        if (book.isEmpty()) {
+        try {
+            var book = bookService.findById(id);
+            model.addAttribute("book", book);
+            model.addAttribute("comments", commentService.findByBookId(id));
+            return "book/view";
+        } catch (Exception e) {
             return "redirect:/";
         }
-        model.addAttribute("book", book.get());
-        model.addAttribute("comments", commentService.findByBookId(id));
-        return "book/view";
     }
 
     @GetMapping("/books/new")
@@ -61,14 +62,15 @@ public class BookController {
 
     @GetMapping("/books/{id}/edit")
     public String editBookForm(@PathVariable String id, Model model) {
-        var book = bookService.findById(id);
-        if (book.isEmpty()) {
+        try {
+            var book = bookService.findById(id);
+            model.addAttribute("book", book);
+            model.addAttribute("authors", authorService.findAll());
+            model.addAttribute("genres", genreService.findAll());
+            return "book/form";
+        } catch (Exception e) {
             return "redirect:/";
         }
-        model.addAttribute("book", book.get());
-        model.addAttribute("authors", authorService.findAll());
-        model.addAttribute("genres", genreService.findAll());
-        return "book/form";
     }
 
     @PostMapping("/books")
@@ -107,28 +109,30 @@ public class BookController {
                             Model model) {
         // Validate title
         if (bookDto.getTitle() == null || bookDto.getTitle().trim().isEmpty()) {
-            var book = bookService.findById(id);
-            if (book.isEmpty()) {
+            try {
+                var book = bookService.findById(id);
+                model.addAttribute("book", book);
+                model.addAttribute("authors", authorService.findAll());
+                model.addAttribute("genres", genreService.findAll());
+                model.addAttribute("error", "Title is required and cannot be empty");
+                return "book/form";
+            } catch (Exception e) {
                 return "redirect:/";
             }
-            model.addAttribute("book", book.get());
-            model.addAttribute("authors", authorService.findAll());
-            model.addAttribute("genres", genreService.findAll());
-            model.addAttribute("error", "Title is required and cannot be empty");
-            return "book/form";
         }
         
         // Validate authorId
         if (bookDto.getAuthorId() == null || bookDto.getAuthorId().trim().isEmpty()) {
-            var book = bookService.findById(id);
-            if (book.isEmpty()) {
+            try {
+                var book = bookService.findById(id);
+                model.addAttribute("book", book);
+                model.addAttribute("authors", authorService.findAll());
+                model.addAttribute("genres", genreService.findAll());
+                model.addAttribute("error", "Author is required");
+                return "book/form";
+            } catch (Exception e) {
                 return "redirect:/";
             }
-            model.addAttribute("book", book.get());
-            model.addAttribute("authors", authorService.findAll());
-            model.addAttribute("genres", genreService.findAll());
-            model.addAttribute("error", "Author is required");
-            return "book/form";
         }
         
         Set<String> genreIds = bookDto.getGenreIds();
@@ -141,12 +145,13 @@ public class BookController {
 
     @GetMapping("/books/{id}/delete")
     public String deleteBookConfirm(@PathVariable String id, Model model) {
-        var book = bookService.findById(id);
-        if (book.isEmpty()) {
+        try {
+            var book = bookService.findById(id);
+            model.addAttribute("book", book);
+            return "book/delete";
+        } catch (Exception e) {
             return "redirect:/";
         }
-        model.addAttribute("book", book.get());
-        return "book/delete";
     }
 
     @PostMapping("/books/{id}/delete")
