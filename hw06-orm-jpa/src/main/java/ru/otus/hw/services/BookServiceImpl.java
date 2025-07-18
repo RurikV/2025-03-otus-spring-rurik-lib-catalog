@@ -28,7 +28,12 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional(readOnly = true)
     public Optional<Book> findById(long id) {
-        return bookRepository.findById(id);
+        Optional<Book> bookOpt = bookRepository.findById(id);
+        // Принудительно загружаем комментарии, вызывая size() для инициализации lazy-коллекции
+        bookOpt.ifPresent(book -> {
+            int commentsCount = book.getComments().size(); // Используем результат для принудительной загрузки
+        });
+        return bookOpt;
     }
 
     @Override
