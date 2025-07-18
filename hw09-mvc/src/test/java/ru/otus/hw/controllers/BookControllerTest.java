@@ -5,6 +5,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
@@ -26,6 +31,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(BookController.class)
+@Import(BookControllerTest.TestConfig.class)
 @DisplayName("BookController should")
 class BookControllerTest {
 
@@ -231,5 +237,16 @@ class BookControllerTest {
                 .andExpect(redirectedUrl("/"));
 
         verify(bookService).deleteById("1");
+    }
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        public MessageSource messageSource() {
+            ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
+            messageSource.setBasename("messages");
+            messageSource.setDefaultEncoding("UTF-8");
+            return messageSource;
+        }
     }
 }
