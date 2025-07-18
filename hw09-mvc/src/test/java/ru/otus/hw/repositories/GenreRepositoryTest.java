@@ -4,6 +4,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.context.annotation.Import;
+import ru.otus.hw.config.ConditionalMongoTestConfig;
+import ru.otus.hw.listeners.BookDeleteListener;
 import ru.otus.hw.models.Genre;
 
 import java.util.List;
@@ -13,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("GenreRepository should")
 @DataMongoTest
+@Import({ConditionalMongoTestConfig.class, BookDeleteListener.class})
 class GenreRepositoryTest {
 
     @Autowired

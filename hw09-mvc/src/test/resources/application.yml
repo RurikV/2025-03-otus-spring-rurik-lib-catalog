@@ -3,21 +3,10 @@ spring:
     mongodb:
       # Use a different database name for tests to avoid conflicts
       database: test
-      # For local testing, use a fixed port (27017)
-      port: 27017
-      host: localhost
   mongodb:
     embedded:
       # Specify the version of embedded MongoDB to use
       version: 4.0.2
-  messages:
-    basename: messages
-    encoding: UTF-8
-    cache-duration: 3600
-  web:
-    locale: en
-    locale-resolver: fixed
-
 de:
   flapdoodle:
     mongodb:
@@ -31,8 +20,8 @@ de:
           # In CI, we use embedded MongoDB without authentication for simplicity
           no_auth: true
         network:
-          # Use a fixed port (27017) for consistency
-          port: 27017
+          # Use random port to avoid conflicts
+          port: 0
           bind-ip: localhost
         # Increase timeouts for more reliable tests
         timeout:
