@@ -79,50 +79,28 @@ class BookServiceIntegrationTest {
         // Arrange & Act
         var actualBooks = bookService.findAll();
 
-        // Проверяем каждую книгу на доступность связей
-        for (var book : actualBooks) {
-            // Проверяем, что можем получить доступ к связям без LazyInitializationException
-            assertThat(book.getAuthor()).isNotNull();
-            assertThat(book.getGenres()).isNotNull();
-            assertThat(book.getComments()).isNotNull();
-
-            // Проверяем доступ к именам жанров
-            for (var genre : book.getGenres()) {
-                assertThat(genre.getName()).isNotNull();
-            }
-        }
-
-        // Проверяем первую книгу полностью
-        var firstBook = actualBooks.get(0);
+        // Проверяем каждую книгу на доступность связей без LazyInitializationException
+        // и используем usingRecursiveComparison для проверки
+        var expectedBooks = List.of(
+                new Book(1L, "BookTitle_1",
+                        new Author(1L, "Author_1"),
+                        List.of(new Genre(1L, "Genre_1"), new Genre(2L, "Genre_2")),
+                        actualBooks.get(0).getComments()),
+                new Book(2L, "BookTitle_2",
+                        new Author(2L, "Author_2"),
+                        List.of(new Genre(3L, "Genre_3"), new Genre(4L, "Genre_4")),
+                        actualBooks.get(1).getComments()),
+                new Book(3L, "BookTitle_3",
+                        new Author(3L, "Author_3"),
+                        List.of(new Genre(5L, "Genre_5"), new Genre(6L, "Genre_6")),
+                        actualBooks.get(2).getComments())
+        );
 
         // Assert
         assertThat(actualBooks).isNotNull().hasSize(3);
-
-        // Проверяем каждую книгу на доступность связей
-        for (var book : actualBooks) {
-            var author = book.getAuthor();
-            var genres = book.getGenres();
-            var comments = book.getComments();
-
-            assertThat(author).isNotNull();
-            assertThat(author.getFullName()).isNotNull();
-
-            assertThat(genres).isNotNull().isNotEmpty();
-            for (var genre : genres) {
-                assertThat(genre.getName()).isNotNull();
-            }
-
-            assertThat(comments).isNotNull();
-        }
-
-        var expectedFirstBook = new Book(1L, "BookTitle_1", 
-                new Author(1L, "Author_1"),
-                List.of(new Genre(1L, "Genre_1"), new Genre(2L, "Genre_2")),
-                firstBook.getComments());
-
-        assertThat(firstBook).usingRecursiveComparison()
+        assertThat(actualBooks).usingRecursiveComparison()
                 .ignoringFields("comments.book") // избегаем циклических ссылок
-                .isEqualTo(expectedFirstBook);
+                .isEqualTo(expectedBooks);
     }
 
     @DisplayName("должен создавать новую книгу с доступными связями без LazyInitializationException")
