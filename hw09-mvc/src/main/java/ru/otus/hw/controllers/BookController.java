@@ -79,21 +79,9 @@ public class BookController {
     public String saveBook(@ModelAttribute BookDto bookDto,
                           RedirectAttributes redirectAttributes,
                           Model model) {
-        // Validate title
-        if (bookDto.getTitle() == null || bookDto.getTitle().trim().isEmpty()) {
-            model.addAttribute("book", new Book());
-            model.addAttribute("authors", authorService.findAll());
-            model.addAttribute("genres", genreService.findAll());
-            model.addAttribute("error", "Title is required and cannot be empty");
-            return "book/form";
-        }
-        
-        // Validate authorId
-        if (bookDto.getAuthorId() == null || bookDto.getAuthorId().trim().isEmpty()) {
-            model.addAttribute("book", new Book());
-            model.addAttribute("authors", authorService.findAll());
-            model.addAttribute("genres", genreService.findAll());
-            model.addAttribute("error", "Author is required");
+        String validationError = validateBookDto(bookDto);
+        if (validationError != null) {
+            setupFormModel(model, new Book(), validationError);
             return "book/form";
         }
         
@@ -110,30 +98,12 @@ public class BookController {
     public String updateBook(@PathVariable String id,
                             @ModelAttribute BookDto bookDto,
                             Model model) {
-        // Validate title
-        if (bookDto.getTitle() == null || bookDto.getTitle().trim().isEmpty()) {
-            try {
-                var book = bookService.findById(id);
-                model.addAttribute("book", book);
-                model.addAttribute("authors", authorService.findAll());
-                model.addAttribute("genres", genreService.findAll());
-                model.addAttribute("error", "Title is required and cannot be empty");
+        String validationError = validateBookDto(bookDto);
+        if (validationError != null) {
+            setupFormModelWithBookId(model, id, validationError);
+            if (model.containsAttribute("error")) {
                 return "book/form";
-            } catch (Exception e) {
-                return "redirect:/";
-            }
-        }
-        
-        // Validate authorId
-        if (bookDto.getAuthorId() == null || bookDto.getAuthorId().trim().isEmpty()) {
-            try {
-                var book = bookService.findById(id);
-                model.addAttribute("book", book);
-                model.addAttribute("authors", authorService.findAll());
-                model.addAttribute("genres", genreService.findAll());
-                model.addAttribute("error", "Author is required");
-                return "book/form";
-            } catch (Exception e) {
+            } else {
                 return "redirect:/";
             }
         }
@@ -162,5 +132,34 @@ public class BookController {
     public String deleteBook(@PathVariable String id) {
         bookService.deleteById(id);
         return "redirect:/";
+    }
+
+    private String validateBookDto(BookDto bookDto) {
+        if (bookDto.getTitle() == null || bookDto.getTitle().trim().isEmpty()) {
+            return "Title is required and cannot be empty";
+        }
+        if (bookDto.getAuthorId() == null || bookDto.getAuthorId().trim().isEmpty()) {
+            return "Author is required";
+        }
+        return null;
+    }
+
+    private void setupFormModel(Model model, Book book, String error) {
+        model.addAttribute("book", book);
+        model.addAttribute("authors", authorService.findAll());
+        model.addAttribute("genres", genreService.findAll());
+        model.addAttribute("error", error);
+    }
+
+    private void setupFormModelWithBookId(Model model, String id, String error) {
+        try {
+            var book = bookService.findById(id);
+            setupFormModel(model, book, error);
+        } catch (Exception e) {
+            // If a book not found, we don't set an error attribute, so we can redirect
+            // This allows the calling method to handle the redirect appropriately
+            @SuppressWarnings("unused")
+            var ignored = e.getMessage();
+        }
     }
 }

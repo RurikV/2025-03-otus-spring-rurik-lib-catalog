@@ -41,10 +41,12 @@ public class BookServiceImpl implements BookService {
         }
 
         var author = authorRepository.findById(bookCreateDto.getAuthorId())
-                .orElseThrow(() -> new EntityNotFoundException("Author with id %s not found".formatted(bookCreateDto.getAuthorId())));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Author with id %s not found".formatted(bookCreateDto.getAuthorId())));
         var genres = genreRepository.findAllByIds(bookCreateDto.getGenreIds());
         if (isEmpty(genres) || bookCreateDto.getGenreIds().size() != genres.size()) {
-            throw new EntityNotFoundException("One or all genres with ids %s not found".formatted(bookCreateDto.getGenreIds()));
+            throw new EntityNotFoundException(
+                    "One or all genres with ids %s not found".formatted(bookCreateDto.getGenreIds()));
         }
 
         var book = new Book(null, bookCreateDto.getTitle(), author, genres);
@@ -60,10 +62,12 @@ public class BookServiceImpl implements BookService {
         }
 
         var author = authorRepository.findById(bookUpdateDto.getAuthorId())
-                .orElseThrow(() -> new EntityNotFoundException("Author with id %s not found".formatted(bookUpdateDto.getAuthorId())));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Author with id %s not found".formatted(bookUpdateDto.getAuthorId())));
         var genres = genreRepository.findAllByIds(bookUpdateDto.getGenreIds());
         if (isEmpty(genres) || bookUpdateDto.getGenreIds().size() != genres.size()) {
-            throw new EntityNotFoundException("One or all genres with ids %s not found".formatted(bookUpdateDto.getGenreIds()));
+            throw new EntityNotFoundException(
+                    "One or all genres with ids %s not found".formatted(bookUpdateDto.getGenreIds()));
         }
 
         var book = new Book(bookUpdateDto.getId(), bookUpdateDto.getTitle(), author, genres);
