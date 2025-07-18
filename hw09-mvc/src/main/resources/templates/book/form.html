@@ -28,6 +28,9 @@
                         <h2 th:unless="${book.id != null}" th:text="#{book.new.title}">New Book</h2>
                     </div>
                     <div class="card-body">
+                        <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}">
+                            Error message
+                        </div>
                         <form th:action="${book.id != null ? '/books/' + book.id : '/books'}" method="post">
                             <div class="mb-3">
                                 <label for="title" class="form-label" th:text="#{book.title}">Title</label>

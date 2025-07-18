@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.services.AuthorService;
 import ru.otus.hw.services.BookService;
@@ -72,7 +73,27 @@ public class BookController {
     @PostMapping("/books")
     public String saveBook(@RequestParam String title,
                           @RequestParam String authorId,
-                          @RequestParam(required = false) Set<String> genreIds) {
+                          @RequestParam(required = false) Set<String> genreIds,
+                          RedirectAttributes redirectAttributes,
+                          Model model) {
+        // Validate title
+        if (title == null || title.trim().isEmpty()) {
+            model.addAttribute("book", new Book());
+            model.addAttribute("authors", authorService.findAll());
+            model.addAttribute("genres", genreService.findAll());
+            model.addAttribute("error", "Title is required and cannot be empty");
+            return "book/form";
+        }
+        
+        // Validate authorId
+        if (authorId == null || authorId.trim().isEmpty()) {
+            model.addAttribute("book", new Book());
+            model.addAttribute("authors", authorService.findAll());
+            model.addAttribute("genres", genreService.findAll());
+            model.addAttribute("error", "Author is required");
+            return "book/form";
+        }
+        
         if (genreIds == null) {
             genreIds = Set.of();
         }
@@ -84,7 +105,34 @@ public class BookController {
     public String updateBook(@PathVariable String id,
                             @RequestParam String title,
                             @RequestParam String authorId,
-                            @RequestParam(required = false) Set<String> genreIds) {
+                            @RequestParam(required = false) Set<String> genreIds,
+                            Model model) {
+        // Validate title
+        if (title == null || title.trim().isEmpty()) {
+            var book = bookService.findById(id);
+            if (book.isEmpty()) {
+                return "redirect:/";
+            }
+            model.addAttribute("book", book.get());
+            model.addAttribute("authors", authorService.findAll());
+            model.addAttribute("genres", genreService.findAll());
+            model.addAttribute("error", "Title is required and cannot be empty");
+            return "book/form";
+        }
+        
+        // Validate authorId
+        if (authorId == null || authorId.trim().isEmpty()) {
+            var book = bookService.findById(id);
+            if (book.isEmpty()) {
+                return "redirect:/";
+            }
+            model.addAttribute("book", book.get());
+            model.addAttribute("authors", authorService.findAll());
+            model.addAttribute("genres", genreService.findAll());
+            model.addAttribute("error", "Author is required");
+            return "book/form";
+        }
+        
         if (genreIds == null) {
             genreIds = Set.of();
         }
