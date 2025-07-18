@@ -60,7 +60,8 @@ public class CommentServiceImpl implements CommentService {
         }
         
         var comment = commentRepository.findById(commentUpdateDto.getId())
-                .orElseThrow(() -> new EntityNotFoundException("Comment with id %s not found".formatted(commentUpdateDto.getId())));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Comment with id %s not found".formatted(commentUpdateDto.getId())));
         return save(commentUpdateDto.getId(), commentUpdateDto.getText(), comment.getBook().getId());
     }
 
