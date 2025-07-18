@@ -15,7 +15,6 @@ import ru.otus.hw.services.BookService;
 import ru.otus.hw.services.CommentService;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
@@ -88,7 +87,7 @@ class CommentControllerTest {
         var book = new Book("1", "Book Title", author, List.of(genre));
         var comment = new Comment("1", "Comment text", book);
         
-        given(commentService.findById("1")).willReturn(Optional.of(comment));
+        given(commentService.findById("1")).willReturn(comment);
 
         mvc.perform(get("/comments/1/edit"))
                 .andExpect(status().isOk())
@@ -100,7 +99,7 @@ class CommentControllerTest {
     @Test
     @DisplayName("redirect to home when comment not found for edit form")
     void shouldRedirectToHomeWhenCommentNotFoundForEditForm() throws Exception {
-        given(commentService.findById("1")).willReturn(Optional.empty());
+        given(commentService.findById("1")).willThrow(new EntityNotFoundException("Comment with id 1 not found"));
 
         mvc.perform(get("/comments/1/edit"))
                 .andExpect(status().is3xxRedirection())
@@ -115,7 +114,7 @@ class CommentControllerTest {
         var book = new Book("1", "Book Title", author, List.of(genre));
         var comment = new Comment("1", "Updated comment text", book);
         
-        given(commentService.findById("1")).willReturn(Optional.of(comment));
+        given(commentService.findById("1")).willReturn(comment);
         given(commentService.update("1", "Updated comment text")).willReturn(comment);
 
         mvc.perform(post("/comments/1")
@@ -129,7 +128,7 @@ class CommentControllerTest {
     @Test
     @DisplayName("redirect to home when comment not found for update")
     void shouldRedirectToHomeWhenCommentNotFoundForUpdate() throws Exception {
-        given(commentService.findById("1")).willReturn(Optional.empty());
+        given(commentService.findById("1")).willThrow(new EntityNotFoundException("Comment with id 1 not found"));
 
         mvc.perform(post("/comments/1")
                 .param("text", "Updated comment text"))
@@ -145,7 +144,7 @@ class CommentControllerTest {
         var book = new Book("1", "Book Title", author, List.of(genre));
         var comment = new Comment("1", "Comment text", book);
         
-        given(commentService.findById("1")).willReturn(Optional.of(comment));
+        given(commentService.findById("1")).willReturn(comment);
 
         mvc.perform(get("/comments/1/delete"))
                 .andExpect(status().isOk())
@@ -157,7 +156,7 @@ class CommentControllerTest {
     @Test
     @DisplayName("redirect to home when comment not found for delete confirmation")
     void shouldRedirectToHomeWhenCommentNotFoundForDeleteConfirmation() throws Exception {
-        given(commentService.findById("1")).willReturn(Optional.empty());
+        given(commentService.findById("1")).willThrow(new EntityNotFoundException("Comment with id 1 not found"));
 
         mvc.perform(get("/comments/1/delete"))
                 .andExpect(status().is3xxRedirection())
@@ -172,7 +171,7 @@ class CommentControllerTest {
         var book = new Book("1", "Book Title", author, List.of(genre));
         var comment = new Comment("1", "Comment text", book);
         
-        given(commentService.findById("1")).willReturn(Optional.of(comment));
+        given(commentService.findById("1")).willReturn(comment);
 
         mvc.perform(post("/comments/1/delete"))
                 .andExpect(status().is3xxRedirection())
@@ -184,7 +183,7 @@ class CommentControllerTest {
     @Test
     @DisplayName("redirect to home when comment not found for delete")
     void shouldRedirectToHomeWhenCommentNotFoundForDelete() throws Exception {
-        given(commentService.findById("1")).willReturn(Optional.empty());
+        given(commentService.findById("1")).willThrow(new EntityNotFoundException("Comment with id 1 not found"));
 
         mvc.perform(post("/comments/1/delete"))
                 .andExpect(status().is3xxRedirection())
