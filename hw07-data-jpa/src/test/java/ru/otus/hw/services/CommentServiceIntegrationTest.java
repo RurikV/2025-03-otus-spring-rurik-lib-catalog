@@ -10,10 +10,6 @@ import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Comment;
 import ru.otus.hw.models.Genre;
-import ru.otus.hw.repositories.JpaAuthorRepository;
-import ru.otus.hw.repositories.JpaBookRepository;
-import ru.otus.hw.repositories.JpaCommentRepository;
-import ru.otus.hw.repositories.JpaGenreRepository;
 
 import java.util.List;
 
@@ -21,9 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("Интеграционные тесты сервиса комментариев")
 @DataJpaTest
-@Import({BookServiceImpl.class, CommentServiceImpl.class, 
-         JpaBookRepository.class, JpaCommentRepository.class, 
-         JpaAuthorRepository.class, JpaGenreRepository.class})
+@Import({BookServiceImpl.class, CommentServiceImpl.class})
 class CommentServiceIntegrationTest {
 
     @Autowired
