@@ -19,9 +19,13 @@ import ru.otus.hw.models.mongo.MongoBook;
 public class BatchConfiguration {
     
     private final JobRepository jobRepository;
+
     private final PlatformTransactionManager transactionManager;
+
     private final MongoBookItemReader mongoBookItemReader;
+
     private final BookItemProcessor bookItemProcessor;
+
     private final BookItemWriter bookItemWriter;
     
     @Autowired

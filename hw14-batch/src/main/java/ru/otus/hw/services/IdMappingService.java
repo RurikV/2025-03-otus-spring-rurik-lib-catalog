@@ -9,11 +9,15 @@ import java.util.concurrent.atomic.AtomicLong;
 public class IdMappingService {
     
     private final ConcurrentHashMap<String, Long> authorIdMapping = new ConcurrentHashMap<>();
+
     private final ConcurrentHashMap<String, Long> genreIdMapping = new ConcurrentHashMap<>();
+
     private final ConcurrentHashMap<String, Long> bookIdMapping = new ConcurrentHashMap<>();
     
     private final AtomicLong authorIdCounter = new AtomicLong(1);
+
     private final AtomicLong genreIdCounter = new AtomicLong(1);
+
     private final AtomicLong bookIdCounter = new AtomicLong(1);
     
     public Long getOrCreateAuthorId(String mongoId) {

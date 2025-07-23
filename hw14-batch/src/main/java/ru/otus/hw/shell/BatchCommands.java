@@ -15,7 +15,9 @@ import ru.otus.hw.services.IdMappingService;
 public class BatchCommands {
     
     private final JobLauncher jobLauncher;
+
     private final Job migrationJob;
+
     private final IdMappingService idMappingService;
     
     @Autowired
@@ -61,6 +63,7 @@ public class BatchCommands {
     
     @ShellMethod(value = "Show migration status", key = {"status", "migration-status"})
     public String showStatus() {
-        return "Migration utility is ready. Use 'migrate' to start migration or 'restart' to restart with cleared cache.";
+        return "Migration utility is ready. Use 'migrate' to start migration or " +
+                "'restart' to restart with cleared cache.";
     }
 }

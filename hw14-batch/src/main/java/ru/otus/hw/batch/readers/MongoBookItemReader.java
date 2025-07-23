@@ -17,7 +17,9 @@ import java.util.List;
 public class MongoBookItemReader implements ItemReader<MongoBook> {
     
     private final MongoTemplate mongoTemplate;
+
     private Iterator<MongoBook> bookIterator;
+
     private boolean initialized = false;
     
     @Autowired
