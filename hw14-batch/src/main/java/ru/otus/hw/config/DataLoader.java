@@ -22,7 +22,7 @@ public class DataLoader implements CommandLineRunner {
     }
     
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         // Clear existing data
         mongoTemplate.dropCollection(MongoBook.class);
         mongoTemplate.dropCollection(MongoAuthor.class);
