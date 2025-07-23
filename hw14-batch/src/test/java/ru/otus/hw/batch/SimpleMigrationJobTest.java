@@ -11,6 +11,7 @@ import org.springframework.batch.test.context.SpringBatchTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import ru.otus.hw.models.jpa.Author;
 import ru.otus.hw.models.jpa.Book;
@@ -32,15 +33,16 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.batch.core.BatchStatus.COMPLETED;
 
-@SpringBootTest
+@SpringBootTest(classes = ru.otus.hw.BatchMigrationApplication.class)
 @SpringBatchTest
 @TestPropertySource(properties = {
-    "spring.data.mongodb.host=localhost",
-    "spring.data.mongodb.port=27017",
     "spring.data.mongodb.database=test_library_simple",
+    "spring.data.mongodb.port=27018",
     "spring.datasource.url=jdbc:h2:mem:simpletestdb",
-    "spring.jpa.hibernate.ddl-auto=create-drop"
+    "spring.jpa.hibernate.ddl-auto=create-drop",
+    "spring.autoconfigure.exclude=org.springframework.shell.boot.StandardCommandsAutoConfiguration"
 })
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class SimpleMigrationJobTest {
 
     @Autowired

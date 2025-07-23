@@ -7,20 +7,22 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.test.context.SpringBatchTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
+@SpringBootTest(classes = ru.otus.hw.BatchMigrationApplication.class)
 @SpringBatchTest
 @TestPropertySource(properties = {
-    "spring.data.mongodb.host=localhost",
-    "spring.data.mongodb.port=27017",
     "spring.data.mongodb.database=test_library",
+    "spring.data.mongodb.port=27020",
     "spring.datasource.url=jdbc:h2:mem:testdb",
-    "spring.jpa.hibernate.ddl-auto=create-drop"
+    "spring.jpa.hibernate.ddl-auto=create-drop",
+    "spring.autoconfigure.exclude=org.springframework.shell.boot.StandardCommandsAutoConfiguration"
 })
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class BatchConfigurationTest {
 
     @Autowired
