@@ -10,7 +10,6 @@ import ru.otus.hw.models.mongo.MongoComment;
 import ru.otus.hw.models.mongo.MongoGenre;
 
 import java.util.Arrays;
-import java.util.List;
 
 @Component
 public class DataLoader implements CommandLineRunner {

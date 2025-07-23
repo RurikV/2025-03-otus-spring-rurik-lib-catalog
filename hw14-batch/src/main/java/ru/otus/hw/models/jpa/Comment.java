@@ -27,12 +27,6 @@ public class Comment {
     public Comment() {
     }
 
-    public Comment(long id, String text, Book book) {
-        this.id = id;
-        this.text = text;
-        this.book = book;
-    }
-
     public long getId() {
         return id;
     }

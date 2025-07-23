@@ -20,11 +20,6 @@ public class Author {
     public Author() {
     }
 
-    public Author(long id, String fullName) {
-        this.id = id;
-        this.fullName = fullName;
-    }
-
     public long getId() {
         return id;
     }

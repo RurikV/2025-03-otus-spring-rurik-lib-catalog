@@ -43,14 +43,6 @@ public class Book {
     public Book() {
     }
 
-    public Book(long id, String title, Author author, List<Genre> genres, List<Comment> comments) {
-        this.id = id;
-        this.title = title;
-        this.author = author;
-        this.genres = genres;
-        this.comments = comments != null ? comments : new ArrayList<>();
-    }
-
     public long getId() {
         return id;
     }
@@ -83,11 +75,4 @@ public class Book {
         this.genres = genres;
     }
 
-    public List<Comment> getComments() {
-        return comments;
-    }
-
-    public void setComments(List<Comment> comments) {
-        this.comments = comments != null ? comments : new ArrayList<>();
-    }
 }
