@@ -15,7 +15,7 @@ import ru.otus.hw.models.mongo.MongoBook;
 import ru.otus.hw.models.mongo.MongoComment;
 import ru.otus.hw.models.mongo.MongoGenre;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -42,7 +42,7 @@ class BatchProcessorsTest {
         // Given
         MongoAuthor mongoAuthor = new MongoAuthor("mongo-author-1", "Leo Tolstoy");
         MongoGenre mongoGenre = new MongoGenre("mongo-genre-1", "Classic Literature");
-        MongoBook mongoBook = new MongoBook("mongo-book-1", "War and Peace", mongoAuthor, Arrays.asList(mongoGenre));
+        MongoBook mongoBook = new MongoBook("mongo-book-1", "War and Peace", mongoAuthor, Collections.singletonList(mongoGenre));
         
         Author jpaAuthor = new Author();
         jpaAuthor.setId(1L);
@@ -56,7 +56,7 @@ class BatchProcessorsTest {
         expectedBook.setId(1L);
         expectedBook.setTitle("War and Peace");
         expectedBook.setAuthor(jpaAuthor);
-        expectedBook.setGenres(Arrays.asList(jpaGenre));
+        expectedBook.setGenres(Collections.singletonList(jpaGenre));
         
         when(entityMapper.mapToBook(mongoBook)).thenReturn(expectedBook);
 
@@ -166,7 +166,7 @@ class BatchProcessorsTest {
         
         // Given
         MongoAuthor mongoAuthor = new MongoAuthor("mongo-author-1", "Unknown Author");
-        MongoBook mongoBook = new MongoBook("mongo-book-1", "Book Without Genres", mongoAuthor, Arrays.asList());
+        MongoBook mongoBook = new MongoBook("mongo-book-1", "Book Without Genres", mongoAuthor, Collections.emptyList());
         
         Author jpaAuthor = new Author();
         jpaAuthor.setId(1L);
@@ -176,7 +176,7 @@ class BatchProcessorsTest {
         expectedBook.setId(1L);
         expectedBook.setTitle("Book Without Genres");
         expectedBook.setAuthor(jpaAuthor);
-        expectedBook.setGenres(Arrays.asList());
+        expectedBook.setGenres(Collections.emptyList());
         
         when(entityMapper.mapToBook(mongoBook)).thenReturn(expectedBook);
 

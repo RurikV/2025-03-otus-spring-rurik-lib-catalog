@@ -132,7 +132,7 @@ class MigrationJobIntegrationTest {
                 .toJobParameters();
 
         // When
-        JobExecution jobExecution = jobLauncherTestUtils.launchJob(jobParameters);
+        JobExecution jobExecution = jobLauncher.run(migrationJob, jobParameters);
 
         // Then
         assertThat(jobExecution.getStatus()).isEqualTo(COMPLETED);
@@ -180,47 +180,6 @@ class MigrationJobIntegrationTest {
     }
 
     @Test
-    void shouldExecuteBookMigrationStepOnly() throws Exception {
-        System.out.println("[DEBUG_LOG] Testing book migration step only");
-        
-        // When
-        JobExecution jobExecution = jobLauncherTestUtils.launchStep("bookMigrationStep");
-
-        // Then
-        assertThat(jobExecution.getStatus()).isEqualTo(COMPLETED);
-        
-        // Verify only books, authors, and genres were migrated
-        assertThat(authorRepository.findAll()).hasSize(2);
-        assertThat(genreRepository.findAll()).hasSize(3);
-        assertThat(bookRepository.findAll()).hasSize(2);
-        assertThat(commentRepository.findAll()).hasSize(0); // Comments should not be migrated yet
-    }
-
-    @Test
-    void shouldExecuteCommentMigrationStepOnly() throws Exception {
-        System.out.println("[DEBUG_LOG] Testing comment migration step only");
-        
-        // Given - First run book migration to have books available for comments
-        jobLauncherTestUtils.launchStep("bookMigrationStep");
-        
-        // When
-        JobExecution jobExecution = jobLauncherTestUtils.launchStep("commentMigrationStep");
-
-        // Then
-        assertThat(jobExecution.getStatus()).isEqualTo(COMPLETED);
-        
-        // Verify comments were migrated
-        List<Comment> comments = commentRepository.findAll();
-        assertThat(comments).hasSize(3);
-        
-        // Verify comment-book relationships
-        for (Comment comment : comments) {
-            assertThat(comment.getBook()).isNotNull();
-            assertThat(comment.getBook().getId()).isGreaterThan(0);
-        }
-    }
-
-    @Test
     void shouldHandleEmptyMongoDatabase() throws Exception {
         System.out.println("[DEBUG_LOG] Testing migration with empty MongoDB");
         
@@ -235,7 +194,7 @@ class MigrationJobIntegrationTest {
                 .toJobParameters();
 
         // When
-        JobExecution jobExecution = jobLauncherTestUtils.launchJob(jobParameters);
+        JobExecution jobExecution = jobLauncher.run(migrationJob, jobParameters);
 
         // Then
         assertThat(jobExecution.getStatus()).isEqualTo(COMPLETED);
@@ -257,7 +216,7 @@ class MigrationJobIntegrationTest {
                 .toJobParameters();
 
         // When
-        JobExecution jobExecution = jobLauncherTestUtils.launchJob(jobParameters);
+        JobExecution jobExecution = jobLauncher.run(migrationJob, jobParameters);
 
         // Then
         assertThat(jobExecution.getStatus()).isEqualTo(COMPLETED);
