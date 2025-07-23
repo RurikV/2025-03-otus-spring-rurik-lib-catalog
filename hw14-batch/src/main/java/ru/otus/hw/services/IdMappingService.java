@@ -32,14 +32,6 @@ public class IdMappingService {
         return bookIdMapping.computeIfAbsent(mongoId, k -> bookIdCounter.getAndIncrement());
     }
     
-    public Long getAuthorId(String mongoId) {
-        return authorIdMapping.get(mongoId);
-    }
-    
-    public Long getGenreId(String mongoId) {
-        return genreIdMapping.get(mongoId);
-    }
-    
     public Long getBookId(String mongoId) {
         return bookIdMapping.get(mongoId);
     }

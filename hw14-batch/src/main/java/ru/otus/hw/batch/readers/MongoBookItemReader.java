@@ -28,7 +28,7 @@ public class MongoBookItemReader implements ItemReader<MongoBook> {
     }
     
     @Override
-    public MongoBook read() throws Exception, UnexpectedInputException, ParseException, NonTransientResourceException {
+    public MongoBook read() throws UnexpectedInputException, ParseException, NonTransientResourceException {
         if (!initialized) {
             initialize();
         }
@@ -44,10 +44,5 @@ public class MongoBookItemReader implements ItemReader<MongoBook> {
         List<MongoBook> books = mongoTemplate.find(new Query(), MongoBook.class);
         bookIterator = books.iterator();
         initialized = true;
-    }
-    
-    public void reset() {
-        initialized = false;
-        bookIterator = null;
     }
 }

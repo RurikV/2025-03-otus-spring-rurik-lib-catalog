@@ -34,7 +34,7 @@ public class BookItemWriter implements ItemWriter<Book> {
     }
     
     @Override
-    public void write(Chunk<? extends Book> chunk) throws Exception {
+    public void write(Chunk<? extends Book> chunk) {
         List<? extends Book> books = chunk.getItems();
         
         Set<Author> uniqueAuthors = collectUniqueAuthors(books);
