@@ -2,6 +2,7 @@ package ru.otus.hw.batch.processors;
 
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import ru.otus.hw.mappers.EntityMapper;
 import ru.otus.hw.models.jpa.Comment;
@@ -18,11 +19,7 @@ public class CommentItemProcessor implements ItemProcessor<MongoComment, Comment
     }
     
     @Override
-    public Comment process(MongoComment mongoComment) throws Exception {
-        if (mongoComment == null) {
-            return null;
-        }
-        
+    public Comment process(@NonNull MongoComment mongoComment) {
         // Transform MongoDB comment to JPA comment
         Comment comment = entityMapper.mapToComment(mongoComment);
         
