@@ -23,40 +23,29 @@ import ru.otus.hw.models.mongo.MongoComment;
 @Configuration
 public class BatchConfiguration {
     
-    private final JobRepository jobRepository;
-
-    private final PlatformTransactionManager transactionManager;
-
-    private final MongoBookItemReader mongoBookItemReader;
-
-    private final BookItemProcessor bookItemProcessor;
-
-    private final BookItemWriter bookItemWriter;
-
-    private final MongoCommentItemReader mongoCommentItemReader;
-
-    private final CommentItemProcessor commentItemProcessor;
-
-    private final CommentItemWriter commentItemWriter;
-    
     @Autowired
-    public BatchConfiguration(JobRepository jobRepository,
-                             PlatformTransactionManager transactionManager,
-                             MongoBookItemReader mongoBookItemReader,
-                             BookItemProcessor bookItemProcessor,
-                             BookItemWriter bookItemWriter,
-                             MongoCommentItemReader mongoCommentItemReader,
-                             CommentItemProcessor commentItemProcessor,
-                             CommentItemWriter commentItemWriter) {
-        this.jobRepository = jobRepository;
-        this.transactionManager = transactionManager;
-        this.mongoBookItemReader = mongoBookItemReader;
-        this.bookItemProcessor = bookItemProcessor;
-        this.bookItemWriter = bookItemWriter;
-        this.mongoCommentItemReader = mongoCommentItemReader;
-        this.commentItemProcessor = commentItemProcessor;
-        this.commentItemWriter = commentItemWriter;
-    }
+    private JobRepository jobRepository;
+
+    @Autowired
+    private PlatformTransactionManager transactionManager;
+
+    @Autowired
+    private MongoBookItemReader mongoBookItemReader;
+
+    @Autowired
+    private BookItemProcessor bookItemProcessor;
+
+    @Autowired
+    private BookItemWriter bookItemWriter;
+
+    @Autowired
+    private MongoCommentItemReader mongoCommentItemReader;
+
+    @Autowired
+    private CommentItemProcessor commentItemProcessor;
+
+    @Autowired
+    private CommentItemWriter commentItemWriter;
     
     @Bean
     public Step bookMigrationStep() {
