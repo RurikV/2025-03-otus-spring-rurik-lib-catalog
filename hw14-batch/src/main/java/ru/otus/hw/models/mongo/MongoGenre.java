@@ -3,19 +3,19 @@ package ru.otus.hw.models.mongo;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "authors")
-public class MongoAuthor {
+@Document(collection = "genres")
+public class MongoGenre {
     @Id
     private String id;
 
-    private String fullName;
+    private String name;
 
-    public MongoAuthor() {
+    public MongoGenre() {
     }
 
-    public MongoAuthor(String id, String fullName) {
+    public MongoGenre(String id, String name) {
         this.id = id;
-        this.fullName = fullName;
+        this.name = name;
     }
 
     public String getId() {
@@ -26,11 +26,11 @@ public class MongoAuthor {
         this.id = id;
     }
 
-    public String getFullName() {
-        return fullName;
+    public String getName() {
+        return name;
     }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
+    public void setName(String name) {
+        this.name = name;
     }
 }
