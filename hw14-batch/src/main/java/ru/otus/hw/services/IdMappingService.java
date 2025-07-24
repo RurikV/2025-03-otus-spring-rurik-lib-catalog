@@ -36,6 +36,11 @@ public class IdMappingService {
         return bookIdMapping.get(mongoId);
     }
     
+    
+    public void updateBookId(String mongoId, Long databaseId) {
+        bookIdMapping.put(mongoId, databaseId);
+    }
+    
     public void clearMappings() {
         authorIdMapping.clear();
         genreIdMapping.clear();

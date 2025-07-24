@@ -5,6 +5,8 @@ import org.springframework.batch.item.NonTransientResourceException;
 import org.springframework.batch.item.ParseException;
 import org.springframework.batch.item.UnexpectedInputException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 
 @Component
+@Scope(value = "step", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class MongoBookItemReader implements ItemReader<MongoBook> {
     
     private final MongoTemplate mongoTemplate;
@@ -33,16 +36,22 @@ public class MongoBookItemReader implements ItemReader<MongoBook> {
             initialize();
         }
         
-        if (bookIterator.hasNext()) {
+        if (bookIterator != null && bookIterator.hasNext()) {
             return bookIterator.next();
         }
         
         return null; // End of data
     }
     
+    public void reset() {
+        initialized = false;
+        bookIterator = null;
+    }
+    
     private void initialize() {
         List<MongoBook> books = mongoTemplate.find(new Query(), MongoBook.class);
         bookIterator = books.iterator();
         initialized = true;
+        System.out.println("[DEBUG_LOG] MongoBookItemReader initialized with " + books.size() + " books");
     }
 }

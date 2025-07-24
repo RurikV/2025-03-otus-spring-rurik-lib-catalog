@@ -31,7 +31,7 @@ public class EntityMapper {
         }
         
         Author author = new Author();
-        author.setId(idMappingService.getOrCreateAuthorId(mongoAuthor.getId()));
+        // Don't set ID - let database generate it with IDENTITY strategy
         author.setFullName(mongoAuthor.getFullName());
         return author;
     }
@@ -42,7 +42,7 @@ public class EntityMapper {
         }
         
         Genre genre = new Genre();
-        genre.setId(idMappingService.getOrCreateGenreId(mongoGenre.getId()));
+        // Don't set ID - let database generate it with IDENTITY strategy
         genre.setName(mongoGenre.getName());
         return genre;
     }
@@ -53,7 +53,7 @@ public class EntityMapper {
         }
         
         Book book = new Book();
-        book.setId(idMappingService.getOrCreateBookId(mongoBook.getId()));
+        // Don't set ID - let database generate it with IDENTITY strategy
         book.setTitle(mongoBook.getTitle());
         
         // Map embedded author
@@ -82,8 +82,13 @@ public class EntityMapper {
         
         // Map book reference - we need to create a book with just the ID
         if (mongoComment.getBook() != null) {
+            String mongoBookId = mongoComment.getBook().getId();
+            Long bookId = idMappingService.getBookId(mongoBookId);
+            System.out.println("[DEBUG_LOG] Mapping comment for MongoDB book ID: " + mongoBookId + 
+                              " -> JPA book ID: " + bookId);
+            
             Book book = new Book();
-            book.setId(idMappingService.getBookId(mongoComment.getBook().getId()));
+            book.setId(bookId);
             comment.setBook(book);
         }
         

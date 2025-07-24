@@ -26,6 +26,8 @@ import ru.otus.hw.repositories.BookRepository;
 import ru.otus.hw.repositories.CommentRepository;
 import ru.otus.hw.repositories.GenreRepository;
 import ru.otus.hw.services.IdMappingService;
+import ru.otus.hw.batch.readers.MongoBookItemReader;
+import ru.otus.hw.batch.readers.MongoCommentItemReader;
 
 import java.util.Arrays;
 import java.util.List;
@@ -69,12 +71,22 @@ class SimpleMigrationJobTest {
     @Autowired
     private IdMappingService idMappingService;
 
+    @Autowired
+    private MongoBookItemReader mongoBookItemReader;
+
+    @Autowired
+    private MongoCommentItemReader mongoCommentItemReader;
+
     @BeforeEach
     void setUp() {
         System.out.println("[DEBUG_LOG] Setting up simple migration test");
         
         // Clear all data
         idMappingService.clearMappings();
+        
+        // Reset readers to force re-initialization
+        mongoBookItemReader.reset();
+        mongoCommentItemReader.reset();
         
         // Clear MongoDB collections
         mongoTemplate.dropCollection(MongoBook.class);
