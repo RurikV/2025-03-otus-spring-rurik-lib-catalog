@@ -16,6 +16,5 @@
         <module>hw08-mongo-db</module>
         <module>hw09-mvc</module>
         <module>hw14-batch</module>
-        <module>hw14-batch</module>
     </modules>
 </project>
