@@ -22,7 +22,7 @@ import ru.otus.hw.models.mongo.MongoComment;
 
 @Configuration
 public class BatchConfiguration {
-    
+
     @Autowired
     private JobRepository jobRepository;
 
@@ -46,7 +46,7 @@ public class BatchConfiguration {
 
     @Autowired
     private CommentItemWriter commentItemWriter;
-    
+
     @Bean
     public Step bookMigrationStep() {
         return new StepBuilder("bookMigrationStep", jobRepository)
@@ -56,7 +56,7 @@ public class BatchConfiguration {
                 .writer(bookItemWriter)
                 .build();
     }
-    
+
     @Bean
     public Step commentMigrationStep() {
         return new StepBuilder("commentMigrationStep", jobRepository)
@@ -66,7 +66,7 @@ public class BatchConfiguration {
                 .writer(commentItemWriter)
                 .build();
     }
-    
+
     @Bean
     public Job migrationJob() {
         return new JobBuilder("migrationJob", jobRepository)

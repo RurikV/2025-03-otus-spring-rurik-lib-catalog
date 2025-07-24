@@ -9,14 +9,14 @@ import ru.otus.hw.models.mongo.MongoBook;
 
 @Component
 public class BookItemProcessor implements ItemProcessor<MongoBook, Book> {
-    
+
     private final EntityMapper entityMapper;
-    
+
     @Autowired
     public BookItemProcessor(EntityMapper entityMapper) {
         this.entityMapper = entityMapper;
     }
-    
+
     @Override
     public Book process(MongoBook mongoBook) throws Exception {
         if (mongoBook == null) {

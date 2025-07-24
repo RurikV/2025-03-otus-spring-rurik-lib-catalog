@@ -13,20 +13,20 @@ import ru.otus.hw.services.IdMappingService;
 
 @ShellComponent
 public class BatchCommands {
-    
+
     private final JobLauncher jobLauncher;
 
     private final Job migrationJob;
 
     private final IdMappingService idMappingService;
-    
+
     @Autowired
     public BatchCommands(JobLauncher jobLauncher, Job migrationJob, IdMappingService idMappingService) {
         this.jobLauncher = jobLauncher;
         this.migrationJob = migrationJob;
         this.idMappingService = idMappingService;
     }
-    
+
     @ShellMethod(value = "Start migration job", key = {"migrate", "start-migration"})
     public String startMigration(@ShellOption(defaultValue = "false") boolean restart) {
         try {
@@ -49,18 +49,18 @@ public class BatchCommands {
             return "Failed to start migration job: " + e.getMessage();
         }
     }
-    
+
     @ShellMethod(value = "Restart migration job", key = {"restart-migration", "restart"})
     public String restartMigration() {
         return startMigration(true);
     }
-    
+
     @ShellMethod(value = "Clear ID mappings cache", key = {"clear-cache", "clear"})
     public String clearCache() {
         idMappingService.clearMappings();
         return "ID mappings cache cleared successfully";
     }
-    
+
     @ShellMethod(value = "Show migration status", key = {"status", "migration-status"})
     public String showStatus() {
         return "Migration utility is ready. Use 'migrate' to start migration or " +
