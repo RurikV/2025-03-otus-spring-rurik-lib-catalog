@@ -5,9 +5,16 @@ spring:
   # MongoDB configuration
   data:
     mongodb:
-      host: localhost
-      port: 27017
-      database: library
+      # Default configuration for MongoDB without authentication
+      uri: mongodb://localhost:27017/library
+      
+      # Alternative: Individual settings (comment out uri above if using these)
+      # host: localhost
+      # port: 27017
+      # database: library
+      
+      # For MongoDB with authentication, replace uri above with:
+      # uri: mongodb://username:password@localhost:27017/library?authSource=admin
 
   # JPA/H2 configuration
   datasource:
