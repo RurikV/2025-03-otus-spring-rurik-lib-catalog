@@ -118,15 +118,23 @@ public class BookItemWriter implements ItemWriter<Book> {
             return;
         }
         
-        // Save authors
-        authorRepository.saveAll(uniqueAuthors);
-        
-        // Create a map from author name to saved author (with database ID)
         savedAuthorsMap.clear();
+        
+        // Check for existing authors in database first
         for (Author author : uniqueAuthors) {
-            savedAuthorsMap.put(author.getFullName(), author);
-            System.out.println("[DEBUG_LOG] Saved author: " + author.getFullName() + 
-                              " with database ID: " + author.getId());
+            Author existingAuthor = authorRepository.findByFullName(author.getFullName());
+            if (existingAuthor != null) {
+                // Use existing author
+                savedAuthorsMap.put(author.getFullName(), existingAuthor);
+                System.out.println("[DEBUG_LOG] Found existing author: " + existingAuthor.getFullName() + 
+                                  " with database ID: " + existingAuthor.getId());
+            } else {
+                // Save new author
+                Author savedAuthor = authorRepository.save(author);
+                savedAuthorsMap.put(author.getFullName(), savedAuthor);
+                System.out.println("[DEBUG_LOG] Saved author: " + savedAuthor.getFullName() + 
+                                  " with database ID: " + savedAuthor.getId());
+            }
         }
     }
     
@@ -135,15 +143,23 @@ public class BookItemWriter implements ItemWriter<Book> {
             return;
         }
         
-        // Save genres
-        genreRepository.saveAll(uniqueGenres);
-        
-        // Create a map from genre name to saved genre (with database ID)
         savedGenresMap.clear();
+        
+        // Check for existing genres in database first
         for (Genre genre : uniqueGenres) {
-            savedGenresMap.put(genre.getName(), genre);
-            System.out.println("[DEBUG_LOG] Saved genre: " + genre.getName() + 
-                              " with database ID: " + genre.getId());
+            Genre existingGenre = genreRepository.findByName(genre.getName());
+            if (existingGenre != null) {
+                // Use existing genre
+                savedGenresMap.put(genre.getName(), existingGenre);
+                System.out.println("[DEBUG_LOG] Found existing genre: " + existingGenre.getName() + 
+                                  " with database ID: " + existingGenre.getId());
+            } else {
+                // Save new genre
+                Genre savedGenre = genreRepository.save(genre);
+                savedGenresMap.put(genre.getName(), savedGenre);
+                System.out.println("[DEBUG_LOG] Saved genre: " + savedGenre.getName() + 
+                                  " with database ID: " + savedGenre.getId());
+            }
         }
     }
     

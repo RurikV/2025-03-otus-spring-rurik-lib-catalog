@@ -6,4 +6,5 @@ import ru.otus.hw.models.jpa.Author;
 
 @Repository
 public interface AuthorRepository extends JpaRepository<Author, Long> {
+    Author findByFullName(String fullName);
 }

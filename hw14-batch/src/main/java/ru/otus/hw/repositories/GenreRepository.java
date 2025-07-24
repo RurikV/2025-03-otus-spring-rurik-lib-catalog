@@ -6,4 +6,5 @@ import ru.otus.hw.models.jpa.Genre;
 
 @Repository
 public interface GenreRepository extends JpaRepository<Genre, Long> {
+    Genre findByName(String name);
 }
