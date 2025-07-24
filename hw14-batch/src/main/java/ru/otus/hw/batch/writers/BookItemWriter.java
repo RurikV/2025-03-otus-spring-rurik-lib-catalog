@@ -36,6 +36,10 @@ public class BookItemWriter implements ItemWriter<Book> {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    private final Map<String, Author> savedAuthorsMap = new HashMap<>();
+
+    private final Map<String, Genre> savedGenresMap = new HashMap<>();
     
     @Autowired
     public BookItemWriter(BookRepository bookRepository, 
@@ -96,45 +100,44 @@ public class BookItemWriter implements ItemWriter<Book> {
             return;
         }
         
+        List<Book> booksToSave = collectBooksToSave(books);
+        saveNewBooks(booksToSave);
+    }
+
+    private List<Book> collectBooksToSave(List<? extends Book> books) {
         List<Book> booksToSave = new ArrayList<>();
         
-        // Check for existing books in database first
         for (Book book : books) {
             Book existingBook = bookRepository.findByTitle(book.getTitle());
             if (existingBook != null) {
-                // Use existing book
                 System.out.println("[DEBUG_LOG] Found existing book: " + existingBook.getTitle() + 
                                   " with database ID: " + existingBook.getId());
-                // Update the ID mapping for comments to reference
-                if ("War and Peace".equals(existingBook.getTitle())) {
-                    idMappingService.updateBookId("mongo-book-1", existingBook.getId());
-                } else if ("Crime and Punishment".equals(existingBook.getTitle())) {
-                    idMappingService.updateBookId("mongo-book-2", existingBook.getId());
-                }
+                updateBookIdMapping(existingBook);
             } else {
-                // Add to list of books to save
                 booksToSave.add(book);
             }
         }
-        
-        // Save only new books
+        return booksToSave;
+    }
+
+    private void saveNewBooks(List<Book> booksToSave) {
         if (!booksToSave.isEmpty()) {
             bookRepository.saveAll(booksToSave);
             for (Book book : booksToSave) {
                 System.out.println("[DEBUG_LOG] Saved book: " + book.getTitle() + 
                                   " with ID: " + book.getId());
-                // Update the ID mapping for comments to reference
-                if ("War and Peace".equals(book.getTitle())) {
-                    idMappingService.updateBookId("mongo-book-1", book.getId());
-                } else if ("Crime and Punishment".equals(book.getTitle())) {
-                    idMappingService.updateBookId("mongo-book-2", book.getId());
-                }
+                updateBookIdMapping(book);
             }
         }
     }
 
-    private final Map<String, Author> savedAuthorsMap = new HashMap<>();
-    private final Map<String, Genre> savedGenresMap = new HashMap<>();
+    private void updateBookIdMapping(Book book) {
+        if ("War and Peace".equals(book.getTitle())) {
+            idMappingService.updateBookId("mongo-book-1", book.getId());
+        } else if ("Crime and Punishment".equals(book.getTitle())) {
+            idMappingService.updateBookId("mongo-book-2", book.getId());
+        }
+    }
     
     private void saveAuthorsAndUpdateMappings(Set<Author> uniqueAuthors) {
         if (uniqueAuthors.isEmpty()) {
@@ -187,29 +190,37 @@ public class BookItemWriter implements ItemWriter<Book> {
     }
     
     private void updateBookReferences(List<? extends Book> books) {
-        // Update books to reference the correct database entities
         for (Book book : books) {
-            // Update author reference
-            if (book.getAuthor() != null) {
-                String authorName = book.getAuthor().getFullName();
-                Author savedAuthor = savedAuthorsMap.get(authorName);
-                if (savedAuthor != null) {
-                    book.setAuthor(savedAuthor);
-                }
-            }
-            
-            // Update genre references
-            if (book.getGenres() != null) {
-                List<Genre> updatedGenres = new ArrayList<>();
-                for (Genre genre : book.getGenres()) {
-                    String genreName = genre.getName();
-                    Genre savedGenre = savedGenresMap.get(genreName);
-                    if (savedGenre != null) {
-                        updatedGenres.add(savedGenre);
-                    }
-                }
-                book.setGenres(updatedGenres);
+            updateBookAuthorReference(book);
+            updateBookGenreReferences(book);
+        }
+    }
+
+    private void updateBookAuthorReference(Book book) {
+        if (book.getAuthor() != null) {
+            String authorName = book.getAuthor().getFullName();
+            Author savedAuthor = savedAuthorsMap.get(authorName);
+            if (savedAuthor != null) {
+                book.setAuthor(savedAuthor);
             }
         }
+    }
+
+    private void updateBookGenreReferences(Book book) {
+        if (book.getGenres() != null) {
+            List<Genre> updatedGenres = new ArrayList<>();
+            for (Genre genre : book.getGenres()) {
+                Genre savedGenre = findSavedGenre(genre);
+                if (savedGenre != null) {
+                    updatedGenres.add(savedGenre);
+                }
+            }
+            book.setGenres(updatedGenres);
+        }
+    }
+
+    private Genre findSavedGenre(Genre genre) {
+        String genreName = genre.getName();
+        return savedGenresMap.get(genreName);
     }
 }
