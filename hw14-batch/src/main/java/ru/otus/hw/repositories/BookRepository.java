@@ -15,4 +15,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @EntityGraph(attributePaths = {"author", "genres"})
     @NonNull
     List<Book> findAll();
+    
+    Book findByTitle(String title);
 }

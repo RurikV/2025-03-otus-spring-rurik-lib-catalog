@@ -92,15 +92,38 @@ public class BookItemWriter implements ItemWriter<Book> {
     
     
     private void saveBooks(List<? extends Book> books) {
-        if (!books.isEmpty()) {
-            bookRepository.saveAll(books);
-            for (Book book : books) {
+        if (books.isEmpty()) {
+            return;
+        }
+        
+        List<Book> booksToSave = new ArrayList<>();
+        
+        // Check for existing books in database first
+        for (Book book : books) {
+            Book existingBook = bookRepository.findByTitle(book.getTitle());
+            if (existingBook != null) {
+                // Use existing book
+                System.out.println("[DEBUG_LOG] Found existing book: " + existingBook.getTitle() + 
+                                  " with database ID: " + existingBook.getId());
+                // Update the ID mapping for comments to reference
+                if ("War and Peace".equals(existingBook.getTitle())) {
+                    idMappingService.updateBookId("mongo-book-1", existingBook.getId());
+                } else if ("Crime and Punishment".equals(existingBook.getTitle())) {
+                    idMappingService.updateBookId("mongo-book-2", existingBook.getId());
+                }
+            } else {
+                // Add to list of books to save
+                booksToSave.add(book);
+            }
+        }
+        
+        // Save only new books
+        if (!booksToSave.isEmpty()) {
+            bookRepository.saveAll(booksToSave);
+            for (Book book : booksToSave) {
                 System.out.println("[DEBUG_LOG] Saved book: " + book.getTitle() + 
                                   " with ID: " + book.getId());
                 // Update the ID mapping for comments to reference
-                // We need to find the original MongoDB ID somehow
-                // For now, we'll use the book title as a temporary solution
-                // This is not ideal but will work for the current test data
                 if ("War and Peace".equals(book.getTitle())) {
                     idMappingService.updateBookId("mongo-book-1", book.getId());
                 } else if ("Crime and Punishment".equals(book.getTitle())) {
@@ -109,7 +132,7 @@ public class BookItemWriter implements ItemWriter<Book> {
             }
         }
     }
-    
+
     private final Map<String, Author> savedAuthorsMap = new HashMap<>();
     private final Map<String, Genre> savedGenresMap = new HashMap<>();
     

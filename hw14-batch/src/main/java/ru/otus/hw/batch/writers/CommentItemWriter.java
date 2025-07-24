@@ -24,9 +24,22 @@ public class CommentItemWriter implements ItemWriter<Comment> {
         List<? extends Comment> comments = chunk.getItems();
         
         for (Comment comment : comments) {
-            commentRepository.save(comment);
-            System.out.println("[DEBUG_LOG] Saved comment: " + comment.getText() + 
-                              " for book ID: " + (comment.getBook() != null ? comment.getBook().getId() : "null"));
+            // Check if comment already exists
+            Comment existingComment = null;
+            if (comment.getBook() != null) {
+                existingComment = commentRepository.findByTextAndBook(comment.getText(), comment.getBook());
+            }
+            
+            if (existingComment != null) {
+                // Comment already exists, skip saving
+                System.out.println("[DEBUG_LOG] Found existing comment: " + existingComment.getText() + 
+                                  " for book ID: " + existingComment.getBook().getId());
+            } else {
+                // Save new comment
+                commentRepository.save(comment);
+                System.out.println("[DEBUG_LOG] Saved comment: " + comment.getText() + 
+                                  " for book ID: " + (comment.getBook() != null ? comment.getBook().getId() : "null"));
+            }
         }
     }
 }
