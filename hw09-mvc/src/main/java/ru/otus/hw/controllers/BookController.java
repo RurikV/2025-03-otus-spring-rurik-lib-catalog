@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.validation.BindingResult;
 import jakarta.validation.Valid;
 import ru.otus.hw.dto.BookCreateDto;
@@ -72,10 +71,9 @@ public class BookController {
     @PostMapping("/books")
     public String saveBook(@Valid @ModelAttribute BookDto bookDto,
                           BindingResult bindingResult,
-                          RedirectAttributes redirectAttributes,
                           Model model) {
         if (bindingResult.hasErrors()) {
-            setupFormModel(model, new Book(), null);
+            setupFormModel(model, new Book());
             return "book/form";
         }
         
@@ -97,7 +95,7 @@ public class BookController {
         bookUpdateDto.setId(id);
         
         if (bindingResult.hasErrors()) {
-            setupFormModelWithBookId(model, id, null);
+            setupFormModelWithBookId(model, id);
             return "book/form";
         }
         
@@ -124,15 +122,14 @@ public class BookController {
     }
 
 
-    private void setupFormModel(Model model, Book book, String error) {
+    private void setupFormModel(Model model, Book book) {
         model.addAttribute("book", book);
         model.addAttribute("authors", authorService.findAll());
         model.addAttribute("genres", genreService.findAll());
-        model.addAttribute("error", error);
     }
 
-    private void setupFormModelWithBookId(Model model, String id, String error) {
+    private void setupFormModelWithBookId(Model model, String id) {
         var book = bookService.findById(id);
-        setupFormModel(model, book, error);
+        setupFormModel(model, book);
     }
 }
