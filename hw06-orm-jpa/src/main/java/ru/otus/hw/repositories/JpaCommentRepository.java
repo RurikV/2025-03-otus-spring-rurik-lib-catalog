@@ -16,15 +16,12 @@ public class JpaCommentRepository implements CommentRepository {
 
     @Override
     public Optional<Comment> findById(long id) {
-        return Optional.ofNullable(
-                em.createQuery(
-                        "select c from Comment c " +
-                        "left join fetch c.book " +
-                        "where c.id = :id", Comment.class)
+        return em.createQuery(
+                "select c from Comment c " +
+                "where c.id = :id", Comment.class)
                 .setParameter("id", id)
                 .getResultList()
-                .stream().findFirst().orElse(null)
-        );
+                .stream().findFirst();
     }
 
     @Override
@@ -47,8 +44,9 @@ public class JpaCommentRepository implements CommentRepository {
 
     @Override
     public void deleteById(long id) {
-        em.createQuery("delete from Comment c where c.id = :id")
-                .setParameter("id", id)
-                .executeUpdate();
+        Comment comment = em.find(Comment.class, id);
+        if (comment != null) {
+            em.remove(comment);
+        }
     }
 }
