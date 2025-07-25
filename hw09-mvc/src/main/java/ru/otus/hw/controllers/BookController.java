@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import jakarta.validation.Valid;
 import ru.otus.hw.dto.BookCreateDto;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.BookUpdateDto;
@@ -88,20 +89,23 @@ public class BookController {
 
     @PostMapping("/books/{id}")
     public String updateBook(@PathVariable String id,
-                            @ModelAttribute BookDto bookDto,
+                            @Valid @ModelAttribute BookUpdateDto bookUpdateDto,
                             Model model) {
-        String validationError = validateBookDto(bookDto);
+        // Set the id from path variable to ensure consistency
+        bookUpdateDto.setId(id);
+        
+        String validationError = validateBookUpdateDto(bookUpdateDto);
         if (validationError != null) {
             setupFormModelWithBookId(model, id, validationError);
             return "book/form";
         }
         
-        Set<String> genreIds = bookDto.getGenreIds();
+        Set<String> genreIds = bookUpdateDto.getGenreIds();
         if (genreIds == null) {
             genreIds = Set.of();
+            bookUpdateDto.setGenreIds(genreIds);
         }
-        BookUpdateDto updateDto = new BookUpdateDto(id, bookDto.getTitle(), bookDto.getAuthorId(), genreIds);
-        bookService.update(updateDto);
+        bookService.update(bookUpdateDto);
         return "redirect:/";
     }
 
@@ -123,6 +127,16 @@ public class BookController {
             return "Title is required and cannot be empty";
         }
         if (bookDto.getAuthorId() == null || bookDto.getAuthorId().trim().isEmpty()) {
+            return "Author is required";
+        }
+        return null;
+    }
+
+    private String validateBookUpdateDto(BookUpdateDto bookUpdateDto) {
+        if (bookUpdateDto.getTitle() == null || bookUpdateDto.getTitle().trim().isEmpty()) {
+            return "Title is required and cannot be empty";
+        }
+        if (bookUpdateDto.getAuthorId() == null || bookUpdateDto.getAuthorId().trim().isEmpty()) {
             return "Author is required";
         }
         return null;
