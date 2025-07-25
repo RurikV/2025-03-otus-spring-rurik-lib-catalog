@@ -3,6 +3,8 @@ package ru.otus.hw.controllers;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.otus.hw.exceptions.EntityNotFoundException;
@@ -39,6 +41,32 @@ public class GlobalExceptionHandler {
         errorResponse.put("message", ex.getMessage());
         
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+        log.warn("Validation error: {}", ex.getMessage());
+        
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("timestamp", LocalDateTime.now());
+        errorResponse.put("status", HttpStatus.BAD_REQUEST.value());
+        errorResponse.put("error", "Bad Request");
+        errorResponse.put("message", "Validation failed");
+        
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<Map<String, Object>> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex) {
+        log.warn("Method not supported: {}", ex.getMessage());
+        
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("timestamp", LocalDateTime.now());
+        errorResponse.put("status", HttpStatus.METHOD_NOT_ALLOWED.value());
+        errorResponse.put("error", "Method Not Allowed");
+        errorResponse.put("message", ex.getMessage());
+        
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(errorResponse);
     }
 
     @ExceptionHandler(Exception.class)

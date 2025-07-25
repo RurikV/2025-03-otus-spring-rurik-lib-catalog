@@ -235,6 +235,36 @@ class BookControllerTest {
         verify(bookService).update(updateDto);
     }
 
+    @Test
+    @DisplayName("return 400 when genreIds is null during book update")
+    void shouldReturn400WhenGenreIdsIsNullDuringBookUpdate() throws Exception {
+        var updateDto = new BookUpdateDto("1", "Updated Title", "1", null);
+        
+        given(bookService.update(updateDto)).willThrow(new IllegalArgumentException("Genres ids must not be null"));
+
+        mvc.perform(put("/api/books/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateDto)))
+                .andExpect(status().isBadRequest());
+
+        verify(bookService).update(updateDto);
+    }
+
+    @Test
+    @DisplayName("return 400 when genreIds is empty during book update")
+    void shouldReturn400WhenGenreIdsIsEmptyDuringBookUpdate() throws Exception {
+        var updateDto = new BookUpdateDto("1", "Updated Title", "1", Set.of());
+        
+        given(bookService.update(updateDto)).willThrow(new IllegalArgumentException("Genres ids must not be null"));
+
+        mvc.perform(put("/api/books/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateDto)))
+                .andExpect(status().isBadRequest());
+
+        verify(bookService).update(updateDto);
+    }
+
     @TestConfiguration
     static class TestConfig {
         @Bean
