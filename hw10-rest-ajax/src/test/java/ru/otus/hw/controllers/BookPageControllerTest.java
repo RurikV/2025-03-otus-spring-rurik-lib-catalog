@@ -16,6 +16,7 @@ import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Genre;
 import ru.otus.hw.services.AuthorService;
 import ru.otus.hw.services.BookService;
+import ru.otus.hw.services.CommentService;
 import ru.otus.hw.services.GenreService;
 
 import java.util.List;
@@ -41,6 +42,9 @@ class BookPageControllerTest {
     @MockBean
     private BookService bookService;
 
+    @MockBean
+    private CommentService commentService;
+
     @Test
     @DisplayName("return books list page for root endpoint")
     void shouldReturnBooksListPageForRootEndpoint() throws Exception {
@@ -65,6 +69,7 @@ class BookPageControllerTest {
         var bookDto = new BookDto("1", "Book Title", author, List.of(genre));
         
         given(bookService.findById("1")).willReturn(bookDto);
+        given(commentService.findByBookId("1")).willReturn(List.of());
         
         mvc.perform(get("/books/1"))
                 .andExpect(status().isOk())
@@ -131,6 +136,8 @@ class BookPageControllerTest {
         
         given(bookService.findById("123")).willReturn(bookDto123);
         given(bookService.findById("abc")).willReturn(bookDtoAbc);
+        given(commentService.findByBookId("123")).willReturn(List.of());
+        given(commentService.findByBookId("abc")).willReturn(List.of());
         given(authorService.findAll()).willReturn(List.of(author));
         given(genreService.findAll()).willReturn(List.of(genre));
         
