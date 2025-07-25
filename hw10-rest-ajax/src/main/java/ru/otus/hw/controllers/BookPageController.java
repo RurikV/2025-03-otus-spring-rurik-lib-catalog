@@ -96,7 +96,6 @@ public class BookPageController {
                            @RequestParam String title,
                            @RequestParam String authorId,
                            @RequestParam(required = false) Set<String> genreIds,
-                           RedirectAttributes redirectAttributes,
                            Model model) {
         try {
             var updateDto = new BookUpdateDto(id, title, authorId, genreIds);
