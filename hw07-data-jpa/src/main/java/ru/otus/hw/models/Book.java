@@ -11,6 +11,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedEntityGraphs;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.BatchSize;
@@ -29,6 +32,15 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "books")
+@NamedEntityGraphs({
+    @NamedEntityGraph(name = "book-with-author-and-genres", 
+                      attributeNodes = {
+                          @NamedAttributeNode("author"),
+                          @NamedAttributeNode("genres")
+                      }),
+    @NamedEntityGraph(name = "book-with-author", 
+                      attributeNodes = @NamedAttributeNode("author"))
+})
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
