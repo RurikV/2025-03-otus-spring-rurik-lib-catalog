@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.validation.BindingResult;
 import jakarta.validation.Valid;
 import ru.otus.hw.dto.BookCreateDto;
 import ru.otus.hw.dto.BookDto;
@@ -69,12 +70,12 @@ public class BookController {
     }
 
     @PostMapping("/books")
-    public String saveBook(@ModelAttribute BookDto bookDto,
+    public String saveBook(@Valid @ModelAttribute BookDto bookDto,
+                          BindingResult bindingResult,
                           RedirectAttributes redirectAttributes,
                           Model model) {
-        String validationError = validateBookDto(bookDto);
-        if (validationError != null) {
-            setupFormModel(model, new Book(), validationError);
+        if (bindingResult.hasErrors()) {
+            setupFormModel(model, new Book(), null);
             return "book/form";
         }
         
@@ -90,13 +91,13 @@ public class BookController {
     @PostMapping("/books/{id}")
     public String updateBook(@PathVariable String id,
                             @Valid @ModelAttribute BookUpdateDto bookUpdateDto,
+                            BindingResult bindingResult,
                             Model model) {
         // Set the id from path variable to ensure consistency
         bookUpdateDto.setId(id);
         
-        String validationError = validateBookUpdateDto(bookUpdateDto);
-        if (validationError != null) {
-            setupFormModelWithBookId(model, id, validationError);
+        if (bindingResult.hasErrors()) {
+            setupFormModelWithBookId(model, id, null);
             return "book/form";
         }
         
@@ -122,25 +123,6 @@ public class BookController {
         return "redirect:/";
     }
 
-    private String validateBookDto(BookDto bookDto) {
-        if (bookDto.getTitle() == null || bookDto.getTitle().trim().isEmpty()) {
-            return "Title is required and cannot be empty";
-        }
-        if (bookDto.getAuthorId() == null || bookDto.getAuthorId().trim().isEmpty()) {
-            return "Author is required";
-        }
-        return null;
-    }
-
-    private String validateBookUpdateDto(BookUpdateDto bookUpdateDto) {
-        if (bookUpdateDto.getTitle() == null || bookUpdateDto.getTitle().trim().isEmpty()) {
-            return "Title is required and cannot be empty";
-        }
-        if (bookUpdateDto.getAuthorId() == null || bookUpdateDto.getAuthorId().trim().isEmpty()) {
-            return "Author is required";
-        }
-        return null;
-    }
 
     private void setupFormModel(Model model, Book book, String error) {
         model.addAttribute("book", book);
