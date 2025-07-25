@@ -3,6 +3,7 @@ package ru.otus.hw.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.otus.hw.dto.BookCreateDto;
+import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.BookUpdateDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.models.Book;
@@ -24,18 +25,21 @@ public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
 
     @Override
-    public Book findById(String id) {
-        return bookRepository.findById(id)
+    public BookDto findById(String id) {
+        var book = bookRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Book with id %s not found".formatted(id)));
+        return toBookDto(book);
     }
 
     @Override
-    public List<Book> findAll() {
-        return bookRepository.findAll();
+    public List<BookDto> findAll() {
+        return bookRepository.findAll().stream()
+                .map(this::toBookDto)
+                .toList();
     }
 
     @Override
-    public Book create(BookCreateDto bookCreateDto) {
+    public BookDto create(BookCreateDto bookCreateDto) {
         if (isEmpty(bookCreateDto.getGenreIds())) {
             throw new IllegalArgumentException("Genres ids must not be null");
         }
@@ -50,11 +54,12 @@ public class BookServiceImpl implements BookService {
         }
 
         var book = new Book(null, bookCreateDto.getTitle(), author, genres);
-        return bookRepository.save(book);
+        var savedBook = bookRepository.save(book);
+        return toBookDto(savedBook);
     }
 
     @Override
-    public Book update(BookUpdateDto bookUpdateDto) {
+    public BookDto update(BookUpdateDto bookUpdateDto) {
         findById(bookUpdateDto.getId());
         
         if (isEmpty(bookUpdateDto.getGenreIds())) {
@@ -71,7 +76,12 @@ public class BookServiceImpl implements BookService {
         }
 
         var book = new Book(bookUpdateDto.getId(), bookUpdateDto.getTitle(), author, genres);
-        return bookRepository.save(book);
+        var savedBook = bookRepository.save(book);
+        return toBookDto(savedBook);
+    }
+
+    private BookDto toBookDto(Book book) {
+        return new BookDto(book.getId(), book.getTitle(), book.getAuthor(), book.getGenres());
     }
 
     @Override

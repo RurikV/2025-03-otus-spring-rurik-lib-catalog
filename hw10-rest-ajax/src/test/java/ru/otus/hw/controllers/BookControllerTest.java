@@ -88,7 +88,7 @@ class BookControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value("1"))
                 .andExpect(jsonPath("$.title").value("Book Title"))
-                .andExpect(jsonPath("$.author.name").value("Author Name"));
+                .andExpect(jsonPath("$.author.fullName").value("Author Name"));
     }
 
     @Test
@@ -118,7 +118,7 @@ class BookControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value("1"))
                 .andExpect(jsonPath("$.title").value("Book Title"))
-                .andExpect(jsonPath("$.author.name").value("Author Name"));
+                .andExpect(jsonPath("$.author.fullName").value("Author Name"));
 
         verify(bookService).create(createDto);
     }
@@ -160,7 +160,7 @@ class BookControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value("1"))
                 .andExpect(jsonPath("$.title").value("Updated Title"))
-                .andExpect(jsonPath("$.author.name").value("Author Name"));
+                .andExpect(jsonPath("$.author.fullName").value("Author Name"));
 
         verify(bookService).update(updateDto);
     }

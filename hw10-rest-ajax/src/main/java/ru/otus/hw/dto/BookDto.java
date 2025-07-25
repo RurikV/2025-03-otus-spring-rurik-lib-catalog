@@ -3,19 +3,20 @@ package ru.otus.hw.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import jakarta.validation.constraints.NotBlank;
+import ru.otus.hw.models.Author;
+import ru.otus.hw.models.Genre;
 
-import java.util.Set;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class BookDto {
-    @NotBlank(message = "Title is required and cannot be empty")
+    private String id;
+    
     private String title;
     
-    @NotBlank(message = "Author is required")
-    private String authorId;
+    private Author author;
     
-    private Set<String> genreIds;
+    private List<Genre> genres;
 }
