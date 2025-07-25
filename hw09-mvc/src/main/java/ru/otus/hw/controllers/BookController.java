@@ -7,7 +7,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.validation.BindingResult;
+import jakarta.validation.Valid;
 import ru.otus.hw.dto.BookCreateDto;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.BookUpdateDto;
@@ -68,12 +69,11 @@ public class BookController {
     }
 
     @PostMapping("/books")
-    public String saveBook(@ModelAttribute BookDto bookDto,
-                          RedirectAttributes redirectAttributes,
+    public String saveBook(@Valid @ModelAttribute BookDto bookDto,
+                          BindingResult bindingResult,
                           Model model) {
-        String validationError = validateBookDto(bookDto);
-        if (validationError != null) {
-            setupFormModel(model, new Book(), validationError);
+        if (bindingResult.hasErrors()) {
+            setupFormModel(model, new Book());
             return "book/form";
         }
         
@@ -88,20 +88,23 @@ public class BookController {
 
     @PostMapping("/books/{id}")
     public String updateBook(@PathVariable String id,
-                            @ModelAttribute BookDto bookDto,
+                            @Valid @ModelAttribute BookUpdateDto bookUpdateDto,
+                            BindingResult bindingResult,
                             Model model) {
-        String validationError = validateBookDto(bookDto);
-        if (validationError != null) {
-            setupFormModelWithBookId(model, id, validationError);
+        // Set the id from path variable to ensure consistency
+        bookUpdateDto.setId(id);
+        
+        if (bindingResult.hasErrors()) {
+            setupFormModelWithBookId(model, id);
             return "book/form";
         }
         
-        Set<String> genreIds = bookDto.getGenreIds();
+        Set<String> genreIds = bookUpdateDto.getGenreIds();
         if (genreIds == null) {
             genreIds = Set.of();
+            bookUpdateDto.setGenreIds(genreIds);
         }
-        BookUpdateDto updateDto = new BookUpdateDto(id, bookDto.getTitle(), bookDto.getAuthorId(), genreIds);
-        bookService.update(updateDto);
+        bookService.update(bookUpdateDto);
         return "redirect:/";
     }
 
@@ -118,25 +121,15 @@ public class BookController {
         return "redirect:/";
     }
 
-    private String validateBookDto(BookDto bookDto) {
-        if (bookDto.getTitle() == null || bookDto.getTitle().trim().isEmpty()) {
-            return "Title is required and cannot be empty";
-        }
-        if (bookDto.getAuthorId() == null || bookDto.getAuthorId().trim().isEmpty()) {
-            return "Author is required";
-        }
-        return null;
-    }
 
-    private void setupFormModel(Model model, Book book, String error) {
+    private void setupFormModel(Model model, Book book) {
         model.addAttribute("book", book);
         model.addAttribute("authors", authorService.findAll());
         model.addAttribute("genres", genreService.findAll());
-        model.addAttribute("error", error);
     }
 
-    private void setupFormModelWithBookId(Model model, String id, String error) {
+    private void setupFormModelWithBookId(Model model, String id) {
         var book = bookService.findById(id);
-        setupFormModel(model, book, error);
+        setupFormModel(model, book);
     }
 }
