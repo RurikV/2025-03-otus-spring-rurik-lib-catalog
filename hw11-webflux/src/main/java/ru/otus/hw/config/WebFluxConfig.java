@@ -7,6 +7,7 @@ import org.springframework.context.i18n.SimpleLocaleContext;
 import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
+import org.springframework.lang.NonNull;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.ServerWebExchangeDecorator;
@@ -30,7 +31,8 @@ public class WebFluxConfig implements WebFluxConfigurer {
     public LocaleContextResolver localeContextResolver() {
         AcceptHeaderLocaleContextResolver resolver = new AcceptHeaderLocaleContextResolver() {
             @Override
-            public LocaleContext resolveLocaleContext(ServerWebExchange exchange) {
+            @NonNull
+            public LocaleContext resolveLocaleContext(@NonNull ServerWebExchange exchange) {
                 String lang = exchange.getRequest().getQueryParams().getFirst("lang");
                 if (lang != null) {
                     Locale locale = Locale.forLanguageTag(lang);
@@ -47,22 +49,38 @@ public class WebFluxConfig implements WebFluxConfigurer {
     @Bean
     public WebFilter charsetFilter() {
         return (exchange, chain) -> {
-            ServerWebExchange decoratedExchange = new ServerWebExchangeDecorator(exchange) {
-                @Override
-                public ServerHttpResponse getResponse() {
-                    return new ServerHttpResponseDecorator(super.getResponse()) {
-                        @Override
-                        public reactor.core.publisher.Mono<Void> writeWith(org.reactivestreams.Publisher<? extends org.springframework.core.io.buffer.DataBuffer> body) {
-                            String contentType = getHeaders().getFirst("Content-Type");
-                            if (contentType != null && contentType.equals("text/html")) {
-                                getHeaders().set("Content-Type", "text/html;charset=UTF-8");
-                            }
-                            return super.writeWith(body);
-                        }
-                    };
-                }
-            };
+            ServerWebExchange decoratedExchange = createDecoratedExchange(exchange);
             return chain.filter(decoratedExchange);
+        };
+    }
+
+    private ServerWebExchange createDecoratedExchange(ServerWebExchange exchange) {
+        return new ServerWebExchangeDecorator(exchange) {
+            @Override
+            @NonNull
+            public ServerHttpResponse getResponse() {
+                return createDecoratedResponse(super.getResponse());
+            }
+        };
+    }
+
+    private ServerHttpResponse createDecoratedResponse(ServerHttpResponse response) {
+        return new ServerHttpResponseDecorator(response) {
+            @Override
+            @NonNull
+            public reactor.core.publisher.Mono<Void> writeWith(
+                    @NonNull org.reactivestreams.Publisher<? extends 
+                    org.springframework.core.io.buffer.DataBuffer> body) {
+                setCharsetForHtmlContent();
+                return super.writeWith(body);
+            }
+
+            private void setCharsetForHtmlContent() {
+                String contentType = getHeaders().getFirst("Content-Type");
+                if (contentType != null && contentType.equals("text/html")) {
+                    getHeaders().set("Content-Type", "text/html;charset=UTF-8");
+                }
+            }
         };
     }
 

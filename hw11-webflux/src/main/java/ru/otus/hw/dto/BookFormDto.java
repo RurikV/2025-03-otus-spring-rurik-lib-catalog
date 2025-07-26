@@ -11,6 +11,8 @@ import java.util.Set;
 @AllArgsConstructor
 public class BookFormDto {
     private String title;
+
     private String authorId;
+
     private Set<String> genreIds;
 }
