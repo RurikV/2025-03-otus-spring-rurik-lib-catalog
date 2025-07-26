@@ -25,7 +25,8 @@ public class BookDeleteListener extends AbstractMongoEventListener<Book> {
                 try {
                     commentRepository.deleteByBookId(bookId)
                             .doOnSuccess(unused -> log.info("Comments deleted for book with id: {}", bookId))
-                            .doOnError(error -> log.error("Failed to delete comments for book with id: {}", bookId, error))
+                            .doOnError(error -> log.error("Failed to delete comments for book with id: {}", 
+                                    bookId, error))
                             .block();
                 } catch (Exception e) {
                     log.error("Failed to delete comments for book with id: {}", bookId, e);
