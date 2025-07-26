@@ -2,83 +2,85 @@ package ru.otus.hw.controllers;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.support.ResourceBundleMessageSource;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import ru.otus.hw.services.BookService;
 
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(BookPageController.class)
-@Import(LocalizationIntegrationTest.TestConfig.class)
+@SpringBootTest
+@AutoConfigureWebTestClient
 class LocalizationIntegrationTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    private WebTestClient webTestClient;
 
     @MockBean
     private BookService bookService;
 
     @Test
-    void shouldDisplayRussianTextCorrectly() throws Exception {
+    void shouldDisplayRussianTextCorrectly() {
         given(bookService.findAll()).willReturn(Flux.empty());
 
-        mockMvc.perform(get("/").param("lang", "ru"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith("text/html"))
-                .andExpect(content().encoding("UTF-8"))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Каталог библиотеки")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Книги")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Авторы")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Жанры")))
-                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("????"))));
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder.path("/").queryParam("lang", "ru").build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType("text/html;charset=UTF-8")
+                .expectBody(String.class)
+                .value(body -> {
+                    assert body.contains("Каталог библиотеки");
+                    assert body.contains("Книги");
+                    assert body.contains("Авторы");
+                    assert body.contains("Жанры");
+                    assert !body.contains("????");
+                });
     }
 
     @Test
-    void shouldDisplayEnglishTextCorrectly() throws Exception {
+    void shouldDisplayEnglishTextCorrectly() {
         given(bookService.findAll()).willReturn(Flux.empty());
 
-        mockMvc.perform(get("/").param("lang", "en"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith("text/html"))
-                .andExpect(content().encoding("UTF-8"))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Library Catalog")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Books")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Authors")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Genres")));
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder.path("/").queryParam("lang", "en").build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType("text/html;charset=UTF-8")
+                .expectBody(String.class)
+                .value(body -> {
+                    assert body.contains("Library Catalog");
+                    assert body.contains("Books");
+                    assert body.contains("Authors");
+                    assert body.contains("Genres");
+                });
     }
 
     @Test
-    void shouldSwitchBetweenLocales() throws Exception {
+    void shouldSwitchBetweenLocales() {
         given(bookService.findAll()).willReturn(Flux.empty());
 
         // Test Russian locale
-        mockMvc.perform(get("/").param("lang", "ru"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Каталог библиотеки")));
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder.path("/").queryParam("lang", "ru").build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(String.class)
+                .value(body -> {
+                    assert body.contains("Каталог библиотеки");
+                });
 
         // Test English locale
-        mockMvc.perform(get("/").param("lang", "en"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Library Catalog")));
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder.path("/").queryParam("lang", "en").build())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(String.class)
+                .value(body -> {
+                    assert body.contains("Library Catalog");
+                });
     }
 
-    @TestConfiguration
-    static class TestConfig {
-        @Bean
-        public MessageSource messageSource() {
-            ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-            messageSource.setBasename("messages");
-            messageSource.setDefaultEncoding("UTF-8");
-            return messageSource;
-        }
-    }
 }
