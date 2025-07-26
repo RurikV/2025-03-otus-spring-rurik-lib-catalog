@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
+import ru.otus.hw.models.Author;
 import ru.otus.hw.services.AuthorService;
 
 @Slf4j
@@ -16,14 +17,14 @@ public class AuthorHandler {
 
     private final AuthorService authorService;
 
-    public Mono<ServerResponse> listAuthors(ServerRequest request) {
+    public Mono<ServerResponse> listAuthors(@SuppressWarnings("unused") ServerRequest request) {
         log.info("[DEBUG_LOG] AuthorHandler.listAuthors() called");
         
         return authorService.findAll()
                 .doOnNext(author -> log.info("[DEBUG_LOG] Found author: {}", author.getFullName()))
                 .collectList()
                 .doOnSuccess(authors -> log.info("[DEBUG_LOG] Retrieved {} authors from service: {}", 
-                        authors.size(), authors.stream().map(author -> author.getFullName()).toList()))
+                        authors.size(), authors.stream().map(Author::getFullName).toList()))
                 .doOnError(error -> log.error("[DEBUG_LOG] Error retrieving authors", error))
                 .flatMap(authors -> {
                     log.info("[DEBUG_LOG] Rendering author/list template with {} authors", authors.size());

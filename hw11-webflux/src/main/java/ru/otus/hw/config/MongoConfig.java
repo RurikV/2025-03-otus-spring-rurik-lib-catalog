@@ -30,36 +30,55 @@ public class MongoConfig {
         log.info("[DEBUG_LOG] Starting database initialization...");
         
         try {
-            // Clear existing data and create new data - using block() to ensure completion
-            List<Book> books = bookRepository.deleteAll()
-                    .doOnSuccess(v -> log.info("[DEBUG_LOG] Deleted all books"))
-                    .then(authorRepository.deleteAll())
-                    .doOnSuccess(v -> log.info("[DEBUG_LOG] Deleted all authors"))
-                    .then(genreRepository.deleteAll())
-                    .doOnSuccess(v -> log.info("[DEBUG_LOG] Deleted all genres"))
-                    .then(createAuthors().collectList())
-                    .doOnSuccess(authors -> log.info("[DEBUG_LOG] Created {} authors: {}", 
-                            authors.size(), authors.stream().map(Author::getFullName).toList()))
-                    .flatMap(authors -> createGenres().collectList()
-                            .doOnSuccess(genres -> log.info("[DEBUG_LOG] Created {} genres: {}", 
-                                    genres.size(), genres.stream().map(Genre::getName).toList()))
-                            .flatMap(genres -> createBooks(authors, genres).collectList()
-                                    .doOnSuccess(createdBooks -> log.info("[DEBUG_LOG] Created {} books: {}", 
-                                            createdBooks.size(), createdBooks.stream().map(Book::getTitle).toList()))))
-                    .doOnSuccess(finalBooks -> log.info("[DEBUG_LOG] Database initialized successfully with {} books", finalBooks.size()))
-                    .doOnError(error -> log.error("[DEBUG_LOG] Failed to initialize database", error))
-                    .block(); // Block to ensure completion during startup
+            List<Book> books = performDatabaseInitialization();
             
             log.info("[DEBUG_LOG] Database initialization completed successfully. Total books: {}", 
                     books != null ? books.size() : 0);
             
-            // Verify data was actually saved
             verifyDataAfterInitialization();
             
         } catch (Exception e) {
             log.error("[DEBUG_LOG] Exception during database initialization", e);
             throw new RuntimeException("Database initialization failed", e);
         }
+    }
+
+    private List<Book> performDatabaseInitialization() {
+        return clearExistingData()
+                .then(createAuthors().collectList())
+                .doOnSuccess(authors -> logCreatedAuthors(authors))
+                .flatMap(authors -> createGenres().collectList()
+                        .doOnSuccess(genres -> logCreatedGenres(genres))
+                        .flatMap(genres -> createBooks(authors, genres).collectList()
+                                .doOnSuccess(createdBooks -> logCreatedBooks(createdBooks))))
+                .doOnSuccess(finalBooks -> log.info("[DEBUG_LOG] Database initialized successfully with {} books", 
+                        finalBooks.size()))
+                .doOnError(error -> log.error("[DEBUG_LOG] Failed to initialize database", error))
+                .block();
+    }
+
+    private reactor.core.publisher.Mono<Void> clearExistingData() {
+        return bookRepository.deleteAll()
+                .doOnSuccess(v -> log.info("[DEBUG_LOG] Deleted all books"))
+                .then(authorRepository.deleteAll())
+                .doOnSuccess(v -> log.info("[DEBUG_LOG] Deleted all authors"))
+                .then(genreRepository.deleteAll())
+                .doOnSuccess(v -> log.info("[DEBUG_LOG] Deleted all genres"));
+    }
+
+    private void logCreatedAuthors(List<Author> authors) {
+        log.info("[DEBUG_LOG] Created {} authors: {}", 
+                authors.size(), authors.stream().map(Author::getFullName).toList());
+    }
+
+    private void logCreatedGenres(List<Genre> genres) {
+        log.info("[DEBUG_LOG] Created {} genres: {}", 
+                genres.size(), genres.stream().map(Genre::getName).toList());
+    }
+
+    private void logCreatedBooks(List<Book> books) {
+        log.info("[DEBUG_LOG] Created {} books: {}", 
+                books.size(), books.stream().map(Book::getTitle).toList());
     }
     
     private void verifyDataAfterInitialization() {
@@ -71,7 +90,9 @@ public class MongoConfig {
             log.info("[DEBUG_LOG] Verification - Authors in DB: {}, Genres in DB: {}, Books in DB: {}", 
                     authorCount, genreCount, bookCount);
             
-            if (authorCount == 0 || genreCount == 0 || bookCount == 0) {
+            if ((authorCount != null && authorCount == 0) || 
+                (genreCount != null && genreCount == 0) || 
+                (bookCount != null && bookCount == 0)) {
                 log.error("[DEBUG_LOG] WARNING: Some collections are empty after initialization!");
             }
         } catch (Exception e) {
