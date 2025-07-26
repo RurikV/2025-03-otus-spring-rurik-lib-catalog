@@ -1,0 +1,11 @@
+spring:
+  data:
+    mongodb:
+      # Use a different database name for tests to avoid conflicts
+      database: test
+
+de:
+  flapdoodle:
+    mongodb:
+      embedded:
+        version: 7.0.2
