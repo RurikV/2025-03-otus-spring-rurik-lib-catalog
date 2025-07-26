@@ -55,7 +55,7 @@ public class BookController {
     @DeleteMapping("/books/{id}")
     public Mono<ResponseEntity<Void>> deleteBook(@PathVariable String id) {
         return bookService.deleteById(id)
-                .map(result -> ResponseEntity.noContent().<Void>build());
+                .then(Mono.just(ResponseEntity.noContent().<Void>build()));
     }
 
 }

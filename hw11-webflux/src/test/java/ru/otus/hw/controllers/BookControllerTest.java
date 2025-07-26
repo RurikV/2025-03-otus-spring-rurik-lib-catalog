@@ -169,10 +169,14 @@ class BookControllerTest {
     @Test
     @DisplayName("delete book via REST API")
     void shouldDeleteBookViaRestApi() {
+        given(bookService.deleteById("1")).willReturn(Mono.empty());
+
         webTestClient.delete()
                 .uri("/api/books/1")
                 .exchange()
                 .expectStatus().isNoContent();
+
+        verify(bookService).deleteById("1");
     }
 
     @Test
