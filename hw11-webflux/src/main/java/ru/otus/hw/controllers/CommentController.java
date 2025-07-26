@@ -4,11 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import reactor.core.publisher.Mono;
 import ru.otus.hw.dto.CommentCreateDto;
+import ru.otus.hw.dto.CommentFormDto;
 import ru.otus.hw.dto.CommentUpdateDto;
 import ru.otus.hw.services.BookService;
 import ru.otus.hw.services.CommentService;
@@ -33,8 +34,8 @@ public class CommentController {
 
     @PostMapping("/books/{bookId}/comments")
     public Mono<String> saveComment(@PathVariable String bookId,
-                                   @RequestParam String text) {
-        var createDto = new CommentCreateDto(text, bookId);
+                                   @ModelAttribute CommentFormDto formDto) {
+        var createDto = new CommentCreateDto(formDto.getText(), bookId);
         return commentService.create(createDto)
                 .map(createdComment -> "redirect:/books/" + bookId)
                 .onErrorResume(Exception.class, e -> Mono.just("redirect:/"));
@@ -52,10 +53,10 @@ public class CommentController {
 
     @PostMapping("/comments/{id}")
     public Mono<String> updateComment(@PathVariable String id,
-                                     @RequestParam String text) {
+                                     @ModelAttribute CommentFormDto formDto) {
         return commentService.findById(id)
                 .flatMap(comment -> {
-                    var updateDto = new CommentUpdateDto(id, text);
+                    var updateDto = new CommentUpdateDto(id, formDto.getText());
                     return commentService.update(updateDto)
                             .map(updatedComment -> "redirect:/books/" + comment.getBookId());
                 })

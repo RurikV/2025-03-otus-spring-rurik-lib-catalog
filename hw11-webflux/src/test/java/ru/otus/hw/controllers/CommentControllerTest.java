@@ -111,7 +111,7 @@ class CommentControllerTest {
                 .expectHeader().contentType("text/html;charset=UTF-8")
                 .expectBody(String.class)
                 .value(body -> {
-                    assert body.contains("comment/edit") || body.contains("edit");
+                    assert body.toLowerCase().contains("edit");
                 });
     }
 
