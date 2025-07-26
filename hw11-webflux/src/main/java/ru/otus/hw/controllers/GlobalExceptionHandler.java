@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
-@ControllerAdvice(basePackages = "ru.otus.hw.controllers.api") // Only handle API controllers
+@ControllerAdvice(basePackages = "ru.otus.hw.controllers") // Handle all controllers
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)
