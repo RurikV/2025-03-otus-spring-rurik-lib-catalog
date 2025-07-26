@@ -46,8 +46,8 @@ class BookServiceTest {
         Book book = bookRepository.save(new Book(null, "Test Book", author, List.of(genre))).block();
         
         // Create comments for the book
-        Comment comment1 = commentRepository.save(new Comment(null, "Comment 1", book.getId())).block();
-        Comment comment2 = commentRepository.save(new Comment(null, "Comment 2", book.getId())).block();
+        commentRepository.save(new Comment(null, "Comment 1", book.getId())).block();
+        commentRepository.save(new Comment(null, "Comment 2", book.getId())).block();
         
         // Create another book with comments to ensure they are not affected
         Book anotherBook = bookRepository.save(new Book(null, "Another Book", author, List.of(genre))).block();

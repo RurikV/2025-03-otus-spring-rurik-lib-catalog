@@ -13,6 +13,7 @@ import ru.otus.hw.models.r2dbc.BookEntity;
 import ru.otus.hw.models.r2dbc.BookWithRelations;
 import ru.otus.hw.models.r2dbc.GenreEntity;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -121,14 +122,14 @@ public class BookR2dbcRepositoryImpl implements BookR2dbcRepository {
     }
 
     private Map<String, Object> mapRowToMap(io.r2dbc.spi.Row row, io.r2dbc.spi.RowMetadata metadata) {
-        return Map.of(
-                "bookId", row.get("book_id", Long.class),
-                "title", row.get("title", String.class),
-                "authorId", row.get("author_id", Long.class),
-                "authorName", row.get("full_name", String.class),
-                "genreId", row.get("genre_id", Long.class),
-                "genreName", row.get("genre_name", String.class)
-        );
+        Map<String, Object> map = new HashMap<>();
+        map.put("bookId", row.get("book_id", Long.class));
+        map.put("title", row.get("title", String.class));
+        map.put("authorId", row.get("author_id", Long.class));
+        map.put("authorName", row.get("full_name", String.class));
+        map.put("genreId", row.get("genre_id", Long.class));
+        map.put("genreName", row.get("genre_name", String.class));
+        return map;
     }
 
     private Flux<BookWithRelations> processRowsToBooks(List<Map<String, Object>> rows) {

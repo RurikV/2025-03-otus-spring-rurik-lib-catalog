@@ -17,10 +17,7 @@ import ru.otus.hw.dto.BookUpdateDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Genre;
-import ru.otus.hw.services.AuthorService;
 import ru.otus.hw.services.BookService;
-import ru.otus.hw.services.CommentService;
-import ru.otus.hw.services.GenreService;
 
 import java.util.List;
 import java.util.Set;
@@ -41,15 +38,6 @@ class BookControllerTest {
 
     @MockBean
     private BookService bookService;
-
-    @MockBean
-    private AuthorService authorService;
-
-    @MockBean
-    private GenreService genreService;
-
-    @MockBean
-    private CommentService commentService;
 
     @Test
     @DisplayName("return all books as JSON")

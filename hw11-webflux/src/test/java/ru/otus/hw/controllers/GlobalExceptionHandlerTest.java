@@ -1,6 +1,5 @@
 package ru.otus.hw.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +24,6 @@ class GlobalExceptionHandlerTest {
 
     @MockBean
     private AuthorService authorService;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Test
     @DisplayName("handle EntityNotFoundException and return 404")

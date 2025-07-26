@@ -3,8 +3,6 @@ package ru.otus.hw.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Genre;
@@ -13,6 +11,7 @@ import ru.otus.hw.repositories.BookRepository;
 import ru.otus.hw.repositories.GenreRepository;
 
 import java.util.List;
+import java.util.Objects;
 
 @Configuration
 @RequiredArgsConstructor
@@ -40,19 +39,19 @@ public class MongoConfig {
     }
 
     private List<Author> createAuthors() {
-        Author author1 = authorRepository.save(new Author(null, "Author 1")).block();
-        Author author2 = authorRepository.save(new Author(null, "Author 2")).block();
-        Author author3 = authorRepository.save(new Author(null, "Author 3")).block();
+        Author author1 = Objects.requireNonNull(authorRepository.save(new Author(null, "Author 1")).block());
+        Author author2 = Objects.requireNonNull(authorRepository.save(new Author(null, "Author 2")).block());
+        Author author3 = Objects.requireNonNull(authorRepository.save(new Author(null, "Author 3")).block());
         return List.of(author1, author2, author3);
     }
 
     private List<Genre> createGenres() {
-        Genre genre1 = genreRepository.save(new Genre(null, "Genre 1")).block();
-        Genre genre2 = genreRepository.save(new Genre(null, "Genre 2")).block();
-        Genre genre3 = genreRepository.save(new Genre(null, "Genre 3")).block();
-        Genre genre4 = genreRepository.save(new Genre(null, "Genre 4")).block();
-        Genre genre5 = genreRepository.save(new Genre(null, "Genre 5")).block();
-        Genre genre6 = genreRepository.save(new Genre(null, "Genre 6")).block();
+        Genre genre1 = Objects.requireNonNull(genreRepository.save(new Genre(null, "Genre 1")).block());
+        Genre genre2 = Objects.requireNonNull(genreRepository.save(new Genre(null, "Genre 2")).block());
+        Genre genre3 = Objects.requireNonNull(genreRepository.save(new Genre(null, "Genre 3")).block());
+        Genre genre4 = Objects.requireNonNull(genreRepository.save(new Genre(null, "Genre 4")).block());
+        Genre genre5 = Objects.requireNonNull(genreRepository.save(new Genre(null, "Genre 5")).block());
+        Genre genre6 = Objects.requireNonNull(genreRepository.save(new Genre(null, "Genre 6")).block());
         return List.of(genre1, genre2, genre3, genre4, genre5, genre6);
     }
 

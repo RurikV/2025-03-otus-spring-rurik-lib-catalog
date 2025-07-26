@@ -11,12 +11,7 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import reactor.core.publisher.Flux;
-import ru.otus.hw.services.AuthorService;
 import ru.otus.hw.services.BookService;
-import ru.otus.hw.services.CommentService;
-import ru.otus.hw.services.GenreService;
-
-import java.util.List;
 
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -31,15 +26,6 @@ class LocalizationIntegrationTest {
 
     @MockBean
     private BookService bookService;
-
-    @MockBean
-    private AuthorService authorService;
-
-    @MockBean
-    private GenreService genreService;
-
-    @MockBean
-    private CommentService commentService;
 
     @Test
     void shouldDisplayRussianTextCorrectly() throws Exception {

@@ -17,10 +17,7 @@ import reactor.core.publisher.Mono;
 import ru.otus.hw.dto.BookCreateDto;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.BookUpdateDto;
-import ru.otus.hw.services.AuthorService;
 import ru.otus.hw.services.BookService;
-import ru.otus.hw.services.CommentService;
-import ru.otus.hw.services.GenreService;
 
 @RestController
 @RequestMapping("/api")
@@ -28,12 +25,6 @@ import ru.otus.hw.services.GenreService;
 public class BookController {
 
     private final BookService bookService;
-
-    private final AuthorService authorService;
-
-    private final GenreService genreService;
-
-    private final CommentService commentService;
 
     @GetMapping("/books")
     public Mono<ResponseEntity<Flux<BookDto>>> getAllBooks() {
