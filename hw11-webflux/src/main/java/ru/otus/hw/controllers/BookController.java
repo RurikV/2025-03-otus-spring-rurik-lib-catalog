@@ -35,7 +35,7 @@ public class BookController {
     @GetMapping("/books/{id}")
     public Mono<ResponseEntity<BookDto>> getBook(@PathVariable String id) {
         return bookService.findById(id)
-                .map(book -> ResponseEntity.ok(book));
+                .map(ResponseEntity::ok);
     }
 
     @PostMapping("/books")
@@ -49,13 +49,13 @@ public class BookController {
                                                   @Valid @RequestBody BookUpdateDto bookUpdateDto) {
         bookUpdateDto.setId(id);
         return bookService.update(bookUpdateDto)
-                .map(updatedBook -> ResponseEntity.ok(updatedBook));
+                .map(ResponseEntity::ok);
     }
 
     @DeleteMapping("/books/{id}")
     public Mono<ResponseEntity<Void>> deleteBook(@PathVariable String id) {
         return bookService.deleteById(id)
-                .then(Mono.just(ResponseEntity.noContent().<Void>build()));
+                .then(Mono.just(ResponseEntity.noContent().build()));
     }
 
 }
