@@ -20,7 +20,9 @@ public class BookHandler {
     public Mono<ServerResponse> getAllBooks(ServerRequest request) {
         return ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(bookService.findAll(), ru.otus.hw.dto.BookDto.class);
+                .body(bookService.findAll(), ru.otus.hw.dto.BookDto.class)
+                .onErrorResume(Exception.class, 
+                        e -> ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
     public Mono<ServerResponse> getBook(ServerRequest request) {

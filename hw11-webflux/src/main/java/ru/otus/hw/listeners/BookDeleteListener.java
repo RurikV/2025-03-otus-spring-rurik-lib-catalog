@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.mapping.event.AbstractMongoEventListener;
 import org.springframework.data.mongodb.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.stereotype.Component;
-import reactor.core.scheduler.Schedulers;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.repositories.CommentRepository;
 
@@ -23,11 +22,14 @@ public class BookDeleteListener extends AbstractMongoEventListener<Book> {
             if (idObject != null) {
                 String bookId = idObject.toString();
                 log.info("Deleting comments for book with id: {}", bookId);
-                commentRepository.deleteByBookId(bookId)
-                        .subscribeOn(Schedulers.boundedElastic())
-                        .doOnSuccess(unused -> log.info("Comments deleted for book with id: {}", bookId))
-                        .doOnError(error -> log.error("Failed to delete comments for book with id: {}", bookId, error))
-                        .subscribe();
+                try {
+                    commentRepository.deleteByBookId(bookId)
+                            .doOnSuccess(unused -> log.info("Comments deleted for book with id: {}", bookId))
+                            .doOnError(error -> log.error("Failed to delete comments for book with id: {}", bookId, error))
+                            .block();
+                } catch (Exception e) {
+                    log.error("Failed to delete comments for book with id: {}", bookId, e);
+                }
             }
         }
     }
