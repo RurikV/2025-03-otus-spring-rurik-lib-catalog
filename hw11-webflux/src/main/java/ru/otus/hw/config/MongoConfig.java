@@ -90,14 +90,22 @@ public class MongoConfig {
             log.info("[DEBUG_LOG] Verification - Authors in DB: {}, Genres in DB: {}, Books in DB: {}", 
                     authorCount, genreCount, bookCount);
             
-            if ((authorCount != null && authorCount == 0) || 
-                (genreCount != null && genreCount == 0) || 
-                (bookCount != null && bookCount == 0)) {
+            if (hasEmptyCollections(authorCount, genreCount, bookCount)) {
                 log.error("[DEBUG_LOG] WARNING: Some collections are empty after initialization!");
             }
         } catch (Exception e) {
             log.error("[DEBUG_LOG] Failed to verify data after initialization", e);
         }
+    }
+
+    private boolean hasEmptyCollections(Long authorCount, Long genreCount, Long bookCount) {
+        return isCollectionEmpty(authorCount) || 
+               isCollectionEmpty(genreCount) || 
+               isCollectionEmpty(bookCount);
+    }
+
+    private boolean isCollectionEmpty(Long count) {
+        return count != null && count == 0;
     }
 
     private Flux<Author> createAuthors() {
