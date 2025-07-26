@@ -4,20 +4,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import reactor.core.publisher.Mono;
 import ru.otus.hw.dto.BookCreateDto;
 import ru.otus.hw.dto.BookDto;
+import ru.otus.hw.dto.BookFormDto;
 import ru.otus.hw.dto.BookUpdateDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.services.AuthorService;
 import ru.otus.hw.services.BookService;
 import ru.otus.hw.services.CommentService;
 import ru.otus.hw.services.GenreService;
-
-import java.util.Set;
 
 @Controller
 @RequiredArgsConstructor
@@ -85,16 +84,14 @@ public class BookPageController {
     }
 
     @PostMapping("/books")
-    public Mono<String> createBook(@RequestParam String title,
-                                 @RequestParam String authorId,
-                                 @RequestParam(required = false) Set<String> genreIds,
+    public Mono<String> createBook(@ModelAttribute BookFormDto formDto,
                                  Model model) {
-        var createDto = new BookCreateDto(title, authorId, genreIds);
+        var createDto = new BookCreateDto(formDto.getTitle(), formDto.getAuthorId(), formDto.getGenreIds());
         return bookService.create(createDto)
                 .map(createdBook -> "redirect:/")
                 .onErrorResume(EntityNotFoundException.class, e -> {
                     model.addAttribute("error", e.getMessage());
-                    model.addAttribute("book", new BookDto(null, title, null, null));
+                    model.addAttribute("book", new BookDto(null, formDto.getTitle(), null, null));
                     return Mono.zip(authorService.findAll().collectList(), genreService.findAll().collectList())
                             .map(tuple -> {
                                 model.addAttribute("authors", tuple.getT1());
@@ -104,7 +101,7 @@ public class BookPageController {
                 })
                 .onErrorResume(IllegalArgumentException.class, e -> {
                     model.addAttribute("error", e.getMessage());
-                    model.addAttribute("book", new BookDto(null, title, null, null));
+                    model.addAttribute("book", new BookDto(null, formDto.getTitle(), null, null));
                     return Mono.zip(authorService.findAll().collectList(), genreService.findAll().collectList())
                             .map(tuple -> {
                                 model.addAttribute("authors", tuple.getT1());
@@ -116,11 +113,9 @@ public class BookPageController {
 
     @PostMapping("/books/{id}")
     public Mono<String> updateBook(@PathVariable String id,
-                                 @RequestParam String title,
-                                 @RequestParam String authorId,
-                                 @RequestParam(required = false) Set<String> genreIds,
+                                 @ModelAttribute BookFormDto formDto,
                                  Model model) {
-        var updateDto = new BookUpdateDto(id, title, authorId, genreIds);
+        var updateDto = new BookUpdateDto(id, formDto.getTitle(), formDto.getAuthorId(), formDto.getGenreIds());
         return bookService.update(updateDto)
                 .map(updatedBook -> "redirect:/books/" + id)
                 .onErrorResume(EntityNotFoundException.class, e -> {
