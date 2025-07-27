@@ -71,7 +71,9 @@ public class CommentServiceImpl implements CommentService {
             throw new AuthorizationDeniedException("Access denied", null);
         }
         
-        return save(commentUpdateDto.getId(), commentUpdateDto.getText(), comment.getBook().getId(), comment.getUser());
+        // Update only the text using setter, preserving user and book
+        comment.setText(commentUpdateDto.getText());
+        return commentRepository.save(comment);
     }
 
     @Override
