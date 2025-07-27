@@ -1,7 +1,8 @@
 package ru.otus.hw.services;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import ru.otus.hw.dto.CommentCreateDto;
@@ -50,11 +51,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN') or @commentServiceImpl.isCommentOwner(#commentUpdateDto.id, authentication.name)")
     public Comment update(CommentUpdateDto commentUpdateDto) {
-        if (!hasText(commentUpdateDto.getId())) {
-            throw new IllegalArgumentException("Comment id must not be null or empty");
-        }
         if (!hasText(commentUpdateDto.getText())) {
             throw new IllegalArgumentException("Comment text must not be null or empty");
         }
@@ -62,20 +59,42 @@ public class CommentServiceImpl implements CommentService {
         var comment = commentRepository.findById(commentUpdateDto.getId())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Comment with id %s not found".formatted(commentUpdateDto.getId())));
+        
+        // Check authorization
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+        boolean isOwner = isCommentOwner(commentUpdateDto.getId(), username);
+        
+        if (!isAdmin && !isOwner) {
+            throw new AuthorizationDeniedException("Access denied", null);
+        }
+        
         return save(commentUpdateDto.getId(), commentUpdateDto.getText(), comment.getBook().getId(), comment.getUser());
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN') or @commentServiceImpl.isCommentOwner(#id, authentication.name)")
     public void deleteById(String id) {
-        if (!hasText(id)) {
-            throw new IllegalArgumentException("Comment id must not be null or empty");
+        // Check authorization
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+        boolean isOwner = isCommentOwner(id, username);
+        
+        if (!isAdmin && !isOwner) {
+            throw new AuthorizationDeniedException("Access denied", null);
         }
+        
         commentRepository.deleteById(id);
     }
 
     public boolean isCommentOwner(String commentId, String username) {
-        if (!hasText(commentId) || !hasText(username)) {
+        if (!hasText(commentId)) {
+            throw new IllegalArgumentException("Comment id must not be null or empty");
+        }
+        if (!hasText(username)) {
             return false;
         }
         return commentRepository.findById(commentId)
