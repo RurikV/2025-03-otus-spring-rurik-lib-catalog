@@ -45,13 +45,6 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Comment create(CommentCreateDto commentCreateDto) {
-        if (!hasText(commentCreateDto.getText())) {
-            throw new IllegalArgumentException("Comment text must not be null or empty");
-        }
-        if (!hasText(commentCreateDto.getBookId())) {
-            throw new IllegalArgumentException("Book id must not be null or empty");
-        }
-        
         var currentUser = getCurrentUser();
         return save(null, commentCreateDto.getText(), commentCreateDto.getBookId(), currentUser);
     }

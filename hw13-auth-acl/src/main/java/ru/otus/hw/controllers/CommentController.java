@@ -4,10 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import jakarta.validation.Valid;
 import ru.otus.hw.dto.CommentCreateDto;
 import ru.otus.hw.dto.CommentUpdateDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
@@ -35,9 +39,22 @@ public class CommentController {
 
     @PostMapping("/books/{bookId}/comments")
     public String saveComment(@PathVariable String bookId,
-                             @RequestParam String text) {
-        var createDto = new CommentCreateDto(text, bookId);
-        commentService.create(createDto);
+                             @Valid @ModelAttribute CommentCreateDto commentCreateDto,
+                             BindingResult bindingResult,
+                             Model model) {
+        if (bindingResult.hasErrors()) {
+            try {
+                var book = bookService.findById(bookId);
+                model.addAttribute("book", book);
+                return "comment/form";
+            } catch (Exception e) {
+                return "redirect:/";
+            }
+        }
+        
+        // Ensure bookId is set correctly from path variable
+        commentCreateDto.setBookId(bookId);
+        commentService.create(commentCreateDto);
         return "redirect:/books/" + bookId;
     }
 
