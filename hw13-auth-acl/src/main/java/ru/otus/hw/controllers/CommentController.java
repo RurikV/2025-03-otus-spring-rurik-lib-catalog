@@ -1,6 +1,7 @@
 package ru.otus.hw.controllers;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,6 +42,7 @@ public class CommentController {
     }
 
     @GetMapping("/comments/{id}/edit")
+    @PreAuthorize("hasRole('ADMIN') or @commentServiceImpl.isCommentOwner(#id, authentication.name)")
     public String editCommentForm(@PathVariable String id, Model model) {
         try {
             var comment = commentService.findById(id);
@@ -65,6 +67,7 @@ public class CommentController {
     }
 
     @GetMapping("/comments/{id}/delete")
+    @PreAuthorize("hasRole('ADMIN') or @commentServiceImpl.isCommentOwner(#id, authentication.name)")
     public String deleteCommentConfirm(@PathVariable String id, Model model) {
         try {
             var comment = commentService.findById(id);
