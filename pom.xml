@@ -13,6 +13,7 @@
     <modules>
         <module>hw05-jdbc-hard</module>
         <module>hw06-orm-jpa</module>
+        <module>hw07-data-jpa</module>
         <module>hw08-mongo-db</module>
         <module>hw09-mvc</module>
     </modules>
