@@ -13,5 +13,6 @@
     <modules>
         <module>hw05-jdbc-hard</module>
         <module>hw06-orm-jpa</module>
+        <module>hw07-data-jpa</module>
     </modules>
 </project>
