@@ -16,5 +16,6 @@
         <module>hw08-mongo-db</module>
         <module>hw09-mvc</module>
         <module>hw12-mvc-auth</module>
+        <module>hw13-auth-acl</module>
     </modules>
 </project>
