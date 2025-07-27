@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.context.annotation.Import;
 import ru.otus.hw.config.ConditionalMongoTestConfig;
+import ru.otus.hw.listeners.BookDeleteListener;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Comment;
@@ -17,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("CommentRepository should")
 @DataMongoTest
-@Import({ConditionalMongoTestConfig.class})
+@Import({ConditionalMongoTestConfig.class, BookDeleteListener.class})
 class CommentRepositoryTest {
 
     @Autowired
