@@ -1,20 +1,21 @@
 package ru.otus.hw.controllers;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+import ru.otus.hw.models.Author;
 import ru.otus.hw.services.AuthorService;
 
-@Controller
+import java.util.List;
+
+@RestController
 @RequiredArgsConstructor
 public class AuthorController {
 
     private final AuthorService authorService;
 
     @GetMapping("/authors")
-    public String listAuthors(Model model) {
-        model.addAttribute("authors", authorService.findAll());
-        return "author/list";
+    public List<Author> listAuthors() {
+        return authorService.findAll();
     }
 }
