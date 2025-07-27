@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{books.list.title}">Books</title>
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}" th:text="#{app.title}">Library Catalog</a>
+            <div class="navbar-nav me-auto">
+                <a class="nav-link active" th:href="@{/}" th:text="#{nav.books}">Books</a>
+                <a class="nav-link" th:href="@{/authors}" th:text="#{nav.authors}">Authors</a>
+                <a class="nav-link" th:href="@{/genres}" th:text="#{nav.genres}">Genres</a>
+            </div>
+            <div class="navbar-nav">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" th:text="#{lang.switch}">
+                        Language
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="languageDropdown">
+                        <li><a class="dropdown-item" th:href="@{''(lang=en)}" th:text="#{lang.en}">English</a></li>
+                        <li><a class="dropdown-item" th:href="@{''(lang=ru)}" th:text="#{lang.ru}">Русский</a></li>
+                    </ul>
+                </div>
+                <span class="navbar-text me-3" sec:authorize="isAuthenticated()">
+                    Welcome, <span sec:authentication="name">User</span>!
+                </span>
+                <form class="d-inline" th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()">
+                    <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 th:text="#{books.list.title}">Books</h1>
+            <a th:href="@{/books/new}" class="btn btn-primary" th:text="#{books.new}">Add New Book</a>
+        </div>
+
+        <div th:if="${#lists.isEmpty(books)}" class="alert alert-info" th:text="#{books.list.empty}">
+            No books found.
+        </div>
+
+        <div th:unless="${#lists.isEmpty(books)}" class="row">
+            <div th:each="book : ${books}" class="col-md-6 col-lg-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${book.title}">Book Title</h5>
+                        <p class="card-text">
+                            <strong th:text="#{book.author}">Author:</strong> 
+                            <span th:text="${book.author.fullName}">Author Name</span>
+                        </p>
+                        <p class="card-text">
+                            <strong th:text="#{book.genres}">Genres:</strong>
+                            <span th:each="genre, iterStat : ${book.genres}">
+                                <span th:text="${genre.name}">Genre</span>
+                                <span th:unless="${iterStat.last}">, </span>
+                            </span>
+                        </p>
+                        <div class="btn-group" role="group">
+                            <a th:href="@{/books/{id}(id=${book.id})}" class="btn btn-outline-primary btn-sm" th:text="#{action.view}">View</a>
+                            <a th:href="@{/books/{id}/edit(id=${book.id})}" class="btn btn-outline-secondary btn-sm" th:text="#{action.edit}">Edit</a>
+                            <a th:href="@{/books/{id}/delete(id=${book.id})}" class="btn btn-outline-danger btn-sm" th:text="#{action.delete}">Delete</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>
