@@ -24,22 +24,8 @@ public class JpaToMongoBookProcessor implements ItemProcessor<Book, MongoBook> {
         // Simple transformation: JPA Long ID -> MongoDB String ID
         String mongoId = String.valueOf(jpaBook.getId());
         
-        // Transform author (embedded object - no complex relationships)
-        MongoAuthor mongoAuthor = null;
-        if (jpaBook.getAuthor() != null) {
-            mongoAuthor = new MongoAuthor(
-                String.valueOf(jpaBook.getAuthor().getId()),
-                jpaBook.getAuthor().getFullName()
-            );
-        }
-        
-        // Transform genres (embedded objects - no complex relationships)
-        List<MongoGenre> mongoGenres = null;
-        if (jpaBook.getGenres() != null) {
-            mongoGenres = jpaBook.getGenres().stream()
-                .map(this::transformGenre)
-                .collect(Collectors.toList());
-        }
+        MongoAuthor mongoAuthor = transformAuthor(jpaBook.getAuthor());
+        List<MongoGenre> mongoGenres = transformGenres(jpaBook.getGenres());
         
         MongoBook mongoBook = new MongoBook(mongoId, jpaBook.getTitle(), mongoAuthor, mongoGenres);
         
@@ -47,6 +33,25 @@ public class JpaToMongoBookProcessor implements ItemProcessor<Book, MongoBook> {
                     jpaBook.getId(), mongoBook.getId());
         
         return mongoBook;
+    }
+    
+    private MongoAuthor transformAuthor(ru.otus.hw.models.jpa.Author jpaAuthor) {
+        if (jpaAuthor == null) {
+            return null;
+        }
+        return new MongoAuthor(
+            String.valueOf(jpaAuthor.getId()),
+            jpaAuthor.getFullName()
+        );
+    }
+    
+    private List<MongoGenre> transformGenres(List<Genre> jpaGenres) {
+        if (jpaGenres == null) {
+            return null;
+        }
+        return jpaGenres.stream()
+            .map(this::transformGenre)
+            .collect(Collectors.toList());
     }
     
     private MongoGenre transformGenre(Genre jpaGenre) {
