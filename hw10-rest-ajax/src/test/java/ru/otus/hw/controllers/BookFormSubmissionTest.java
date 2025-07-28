@@ -1,5 +1,6 @@
 package ru.otus.hw.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,9 +10,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import ru.otus.hw.dto.BookCreateDto;
+import ru.otus.hw.dto.BookUpdateDto;
 import ru.otus.hw.services.AuthorService;
 import ru.otus.hw.services.BookService;
 import ru.otus.hw.services.GenreService;
+
+import java.util.Set;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -19,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureWebMvc
-@DisplayName("Book Form Submission Test should")
+@DisplayName("Book REST API Test should")
 class BookFormSubmissionTest {
 
     @Autowired
@@ -34,6 +39,9 @@ class BookFormSubmissionTest {
     @Autowired
     private GenreService genreService;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @Test
     @DisplayName("handle POST request to create new book")
     void shouldHandlePostRequestToCreateNewBook() throws Exception {
@@ -46,16 +54,18 @@ class BookFormSubmissionTest {
             throw new RuntimeException("No authors or genres found in database");
         }
         
-        mockMvc.perform(post("/books")
-                .param("title", "New Test Book")
-                .param("authorId", authors.get(0).getId())
-                .param("genreIds", genres.get(0).getId()))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/"));
+        var createDto = new BookCreateDto("New Test Book", authors.get(0).getId(), Set.of(genres.get(0).getId()));
+        
+        mockMvc.perform(post("/api/books")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createDto)))
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.title").value("New Test Book"));
     }
 
     @Test
-    @DisplayName("handle POST request to update existing book")
+    @DisplayName("handle PUT request to update existing book")
     void shouldHandlePostRequestToUpdateExistingBook() throws Exception {
         MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         
@@ -68,13 +78,14 @@ class BookFormSubmissionTest {
         }
         
         var existingBook = books.get(0);
+        var updateDto = new BookUpdateDto(existingBook.getId(), "Updated Test Book", authors.get(0).getId(), Set.of(genres.get(0).getId()));
         
-        mockMvc.perform(post("/books/" + existingBook.getId())
-                .param("title", "Updated Test Book")
-                .param("authorId", authors.get(0).getId())
-                .param("genreIds", genres.get(0).getId()))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/books/" + existingBook.getId()));
+        mockMvc.perform(put("/api/books/" + existingBook.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateDto)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.title").value("Updated Test Book"));
     }
 
     @Test
@@ -82,7 +93,7 @@ class BookFormSubmissionTest {
     void shouldReturn405ForUnsupportedHttpMethod() throws Exception {
         MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         
-        // Try to PUT to an endpoint that doesn't support PUT (non-API endpoint)
+        // Try to PUT to an endpoint that doesn't support PUT (page controller endpoint)
         mockMvc.perform(put("/books/some-id")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .param("title", "Test Book"))
@@ -93,18 +104,19 @@ class BookFormSubmissionTest {
     }
 
     @Test
-    @DisplayName("handle form validation errors gracefully")
+    @DisplayName("handle validation errors gracefully")
     void shouldHandleFormValidationErrorsGracefully() throws Exception {
         MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         
-        // Try to create book with missing required fields
-        mockMvc.perform(post("/books")
-                .param("title", "")  // Empty title
-                .param("authorId", "invalid-author-id")
-                .param("genreIds", "invalid-genre-id"))
-                .andExpect(status().isOk())  // Should return to form with error
-                .andExpect(view().name("book/form"))
-                .andExpect(model().attributeExists("error"));
+        // Try to create book with invalid data
+        var invalidCreateDto = new BookCreateDto("", "invalid-author-id", Set.of("invalid-genre-id"));
+        
+        mockMvc.perform(post("/api/books")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidCreateDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.status").value(400));
     }
 
     @Test
@@ -118,14 +130,14 @@ class BookFormSubmissionTest {
         }
         
         var existingBook = books.get(0);
+        var invalidUpdateDto = new BookUpdateDto(existingBook.getId(), "", "invalid-author-id", Set.of("invalid-genre-id"));
         
         // Try to update book with invalid data
-        mockMvc.perform(post("/books/" + existingBook.getId())
-                .param("title", "")  // Empty title
-                .param("authorId", "invalid-author-id")
-                .param("genreIds", "invalid-genre-id"))
-                .andExpect(status().isOk())  // Should return to form with error
-                .andExpect(view().name("book/form"))
-                .andExpect(model().attributeExists("error"));
+        mockMvc.perform(put("/api/books/" + existingBook.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidUpdateDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.status").value(400));
     }
 }

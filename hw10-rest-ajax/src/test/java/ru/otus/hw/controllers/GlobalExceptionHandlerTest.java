@@ -34,7 +34,7 @@ class GlobalExceptionHandlerTest {
     void shouldHandleEntityNotFoundExceptionAndReturn404() throws Exception {
         given(authorService.findAll()).willThrow(new EntityNotFoundException("Author not found"));
 
-        mvc.perform(get("/authors"))
+        mvc.perform(get("/api/authors"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.status").value(404))
@@ -48,7 +48,7 @@ class GlobalExceptionHandlerTest {
     void shouldHandleIllegalArgumentExceptionAndReturn400() throws Exception {
         given(authorService.findAll()).willThrow(new IllegalArgumentException("Invalid parameter"));
 
-        mvc.perform(get("/authors"))
+        mvc.perform(get("/api/authors"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.status").value(400))
@@ -62,7 +62,7 @@ class GlobalExceptionHandlerTest {
     void shouldHandleGenericExceptionAndReturn500() throws Exception {
         given(authorService.findAll()).willThrow(new RuntimeException("Unexpected error"));
 
-        mvc.perform(get("/authors"))
+        mvc.perform(get("/api/authors"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.status").value(500))

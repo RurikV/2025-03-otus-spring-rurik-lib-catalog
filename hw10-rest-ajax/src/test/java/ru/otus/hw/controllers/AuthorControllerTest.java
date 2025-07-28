@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.services.AuthorService;
@@ -26,29 +27,33 @@ class AuthorControllerTest {
     private AuthorService authorService;
 
     @Test
-    @DisplayName("return authors list page")
+    @DisplayName("return authors list")
     void shouldReturnAuthorsListPage() throws Exception {
         var author1 = new Author("1", "Author One");
         var author2 = new Author("2", "Author Two");
         
         given(authorService.findAll()).willReturn(List.of(author1, author2));
 
-        mvc.perform(get("/authors"))
+        mvc.perform(get("/api/authors"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("author/list"))
-                .andExpect(model().attributeExists("authors"))
-                .andExpect(model().attribute("authors", List.of(author1, author2)));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].id").value("1"))
+                .andExpect(jsonPath("$[0].fullName").value("Author One"))
+                .andExpect(jsonPath("$[1].id").value("2"))
+                .andExpect(jsonPath("$[1].fullName").value("Author Two"));
     }
 
     @Test
-    @DisplayName("return authors list page with empty list")
+    @DisplayName("return empty authors list")
     void shouldReturnAuthorsListPageWithEmptyList() throws Exception {
         given(authorService.findAll()).willReturn(List.of());
 
-        mvc.perform(get("/authors"))
+        mvc.perform(get("/api/authors"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("author/list"))
-                .andExpect(model().attributeExists("authors"))
-                .andExpect(model().attribute("authors", List.of()));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(0));
     }
 }

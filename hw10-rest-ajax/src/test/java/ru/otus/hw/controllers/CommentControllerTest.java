@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.CommentCreateDto;
 import ru.otus.hw.dto.CommentUpdateDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
@@ -41,17 +40,9 @@ class CommentControllerTest {
     @Test
     @DisplayName("return new comment form")
     void shouldReturnNewCommentForm() throws Exception {
-        var author = new Author("1", "Author Name");
-        var genre = new Genre("1", "Genre Name");
-        var bookDto = new BookDto("1", "Book Title", author, List.of(genre));
-        
-        given(bookService.findById("1")).willReturn(bookDto);
-
         mvc.perform(get("/books/1/comments/new"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("comment/form"))
-                .andExpect(model().attributeExists("book"))
-                .andExpect(model().attribute("book", bookDto));
+                .andExpect(view().name("comment/form"));
     }
 
     @Test
