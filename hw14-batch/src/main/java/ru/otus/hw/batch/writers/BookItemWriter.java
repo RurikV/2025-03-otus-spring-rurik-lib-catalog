@@ -40,10 +40,6 @@ public class BookItemWriter implements ItemWriter<Book> {
 
     @PersistenceContext
     private EntityManager entityManager;
-
-    private final Map<String, Author> savedAuthorsMap = new HashMap<>();
-
-    private final Map<String, Genre> savedGenresMap = new HashMap<>();
     
     @Autowired
     public BookItemWriter(BookRepository bookRepository, 
@@ -64,16 +60,20 @@ public class BookItemWriter implements ItemWriter<Book> {
         Set<Author> uniqueAuthors = collectUniqueAuthors(books);
         Set<Genre> uniqueGenres = collectUniqueGenres(books);
         
+        // Create local maps for this chunk processing
+        Map<String, Author> savedAuthorsMap = new HashMap<>();
+        Map<String, Genre> savedGenresMap = new HashMap<>();
+        
         // Save authors and update ID mappings
-        saveAuthorsAndUpdateMappings(uniqueAuthors);
+        saveAuthorsAndUpdateMappings(uniqueAuthors, savedAuthorsMap);
         entityManager.flush(); // Ensure authors are committed before books reference them
         
         // Save genres and update ID mappings
-        saveGenresAndUpdateMappings(uniqueGenres);
+        saveGenresAndUpdateMappings(uniqueGenres, savedGenresMap);
         entityManager.flush(); // Ensure genres are committed before books reference them
         
         // Update books to reference the correct database IDs
-        updateBookReferences(books);
+        updateBookReferences(books, savedAuthorsMap, savedGenresMap);
         
         saveBooks(books);
     }
@@ -141,12 +141,10 @@ public class BookItemWriter implements ItemWriter<Book> {
         }
     }
     
-    private void saveAuthorsAndUpdateMappings(Set<Author> uniqueAuthors) {
+    private void saveAuthorsAndUpdateMappings(Set<Author> uniqueAuthors, Map<String, Author> savedAuthorsMap) {
         if (uniqueAuthors.isEmpty()) {
             return;
         }
-        
-        savedAuthorsMap.clear();
         
         // Check for existing authors in database first
         for (Author author : uniqueAuthors) {
@@ -164,12 +162,10 @@ public class BookItemWriter implements ItemWriter<Book> {
         }
     }
     
-    private void saveGenresAndUpdateMappings(Set<Genre> uniqueGenres) {
+    private void saveGenresAndUpdateMappings(Set<Genre> uniqueGenres, Map<String, Genre> savedGenresMap) {
         if (uniqueGenres.isEmpty()) {
             return;
         }
-        
-        savedGenresMap.clear();
         
         // Check for existing genres in database first
         for (Genre genre : uniqueGenres) {
@@ -187,14 +183,14 @@ public class BookItemWriter implements ItemWriter<Book> {
         }
     }
     
-    private void updateBookReferences(List<? extends Book> books) {
+    private void updateBookReferences(List<? extends Book> books, Map<String, Author> savedAuthorsMap, Map<String, Genre> savedGenresMap) {
         for (Book book : books) {
-            updateBookAuthorReference(book);
-            updateBookGenreReferences(book);
+            updateBookAuthorReference(book, savedAuthorsMap);
+            updateBookGenreReferences(book, savedGenresMap);
         }
     }
 
-    private void updateBookAuthorReference(Book book) {
+    private void updateBookAuthorReference(Book book, Map<String, Author> savedAuthorsMap) {
         if (book.getAuthor() != null) {
             String authorName = book.getAuthor().getFullName();
             Author savedAuthor = savedAuthorsMap.get(authorName);
@@ -204,11 +200,11 @@ public class BookItemWriter implements ItemWriter<Book> {
         }
     }
 
-    private void updateBookGenreReferences(Book book) {
+    private void updateBookGenreReferences(Book book, Map<String, Genre> savedGenresMap) {
         if (book.getGenres() != null) {
             List<Genre> updatedGenres = new ArrayList<>();
             for (Genre genre : book.getGenres()) {
-                Genre savedGenre = findSavedGenre(genre);
+                Genre savedGenre = findSavedGenre(genre, savedGenresMap);
                 if (savedGenre != null) {
                     updatedGenres.add(savedGenre);
                 }
@@ -217,7 +213,7 @@ public class BookItemWriter implements ItemWriter<Book> {
         }
     }
 
-    private Genre findSavedGenre(Genre genre) {
+    private Genre findSavedGenre(Genre genre, Map<String, Genre> savedGenresMap) {
         String genreName = genre.getName();
         return savedGenresMap.get(genreName);
     }
