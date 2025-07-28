@@ -59,6 +59,15 @@ public class BookItemWriter implements ItemWriter<Book> {
     public void write(Chunk<? extends Book> chunk) {
         List<? extends Book> books = chunk.getItems();
         
+        // Pre-load all existing entities to avoid database queries during transformation
+        Set<String> bookTitles = collectBookTitles(books);
+        Set<String> authorNames = collectAuthorNames(books);
+        Set<String> genreNames = collectGenreNames(books);
+        
+        Map<String, Book> existingBooksMap = preloadExistingBooks(bookTitles);
+        Map<String, Author> existingAuthorsMap = preloadExistingAuthors(authorNames);
+        Map<String, Genre> existingGenresMap = preloadExistingGenres(genreNames);
+        
         Set<Author> uniqueAuthors = collectUniqueAuthors(books);
         Set<Genre> uniqueGenres = collectUniqueGenres(books);
         
@@ -68,11 +77,11 @@ public class BookItemWriter implements ItemWriter<Book> {
         
         // Process authors and genres in parallel
         CompletableFuture<Void> authorsFuture = CompletableFuture.runAsync(() -> {
-            saveAuthorsAndUpdateMappings(uniqueAuthors, savedAuthorsMap);
+            saveAuthorsAndUpdateMappings(uniqueAuthors, savedAuthorsMap, existingAuthorsMap);
         });
         
         CompletableFuture<Void> genresFuture = CompletableFuture.runAsync(() -> {
-            saveGenresAndUpdateMappings(uniqueGenres, savedGenresMap);
+            saveGenresAndUpdateMappings(uniqueGenres, savedGenresMap, existingGenresMap);
         });
         
         try {
@@ -90,7 +99,7 @@ public class BookItemWriter implements ItemWriter<Book> {
         // Update books to reference the correct database IDs
         updateBookReferences(books, savedAuthorsMap, savedGenresMap);
         
-        saveBooks(books);
+        saveBooks(books, existingBooksMap);
     }
     
     private Set<Author> collectUniqueAuthors(List<? extends Book> books) {
@@ -113,21 +122,88 @@ public class BookItemWriter implements ItemWriter<Book> {
         return uniqueGenres;
     }
     
+    private Set<String> collectBookTitles(List<? extends Book> books) {
+        Set<String> titles = new HashSet<>();
+        for (Book book : books) {
+            if (book.getTitle() != null) {
+                titles.add(book.getTitle());
+            }
+        }
+        return titles;
+    }
     
-    private void saveBooks(List<? extends Book> books) {
+    private Set<String> collectAuthorNames(List<? extends Book> books) {
+        Set<String> authorNames = new HashSet<>();
+        for (Book book : books) {
+            if (book.getAuthor() != null && book.getAuthor().getFullName() != null) {
+                authorNames.add(book.getAuthor().getFullName());
+            }
+        }
+        return authorNames;
+    }
+    
+    private Set<String> collectGenreNames(List<? extends Book> books) {
+        Set<String> genreNames = new HashSet<>();
+        for (Book book : books) {
+            if (book.getGenres() != null) {
+                for (Genre genre : book.getGenres()) {
+                    if (genre.getName() != null) {
+                        genreNames.add(genre.getName());
+                    }
+                }
+            }
+        }
+        return genreNames;
+    }
+    
+    private Map<String, Book> preloadExistingBooks(Set<String> titles) {
+        Map<String, Book> existingBooks = new HashMap<>();
+        if (!titles.isEmpty()) {
+            List<Book> books = bookRepository.findByTitleIn(new ArrayList<>(titles));
+            for (Book book : books) {
+                existingBooks.put(book.getTitle(), book);
+            }
+        }
+        return existingBooks;
+    }
+    
+    private Map<String, Author> preloadExistingAuthors(Set<String> authorNames) {
+        Map<String, Author> existingAuthors = new HashMap<>();
+        if (!authorNames.isEmpty()) {
+            List<Author> authors = authorRepository.findByFullNameIn(new ArrayList<>(authorNames));
+            for (Author author : authors) {
+                existingAuthors.put(author.getFullName(), author);
+            }
+        }
+        return existingAuthors;
+    }
+    
+    private Map<String, Genre> preloadExistingGenres(Set<String> genreNames) {
+        Map<String, Genre> existingGenres = new HashMap<>();
+        if (!genreNames.isEmpty()) {
+            List<Genre> genres = genreRepository.findByNameIn(new ArrayList<>(genreNames));
+            for (Genre genre : genres) {
+                existingGenres.put(genre.getName(), genre);
+            }
+        }
+        return existingGenres;
+    }
+    
+    
+    private void saveBooks(List<? extends Book> books, Map<String, Book> existingBooksMap) {
         if (books.isEmpty()) {
             return;
         }
         
-        List<Book> booksToSave = collectBooksToSave(books);
+        List<Book> booksToSave = collectBooksToSave(books, existingBooksMap);
         saveNewBooks(booksToSave);
     }
 
-    private List<Book> collectBooksToSave(List<? extends Book> books) {
+    private List<Book> collectBooksToSave(List<? extends Book> books, Map<String, Book> existingBooksMap) {
         List<Book> booksToSave = new ArrayList<>();
         
         for (Book book : books) {
-            Book existingBook = bookRepository.findByTitle(book.getTitle());
+            Book existingBook = existingBooksMap.get(book.getTitle());
             if (existingBook != null) {
                 logger.debug("Found existing book: {} with database ID: {}", existingBook.getTitle(), existingBook.getId());
                 updateBookIdMapping(existingBook);
@@ -156,14 +232,14 @@ public class BookItemWriter implements ItemWriter<Book> {
         }
     }
     
-    private void saveAuthorsAndUpdateMappings(Set<Author> uniqueAuthors, Map<String, Author> savedAuthorsMap) {
+    private void saveAuthorsAndUpdateMappings(Set<Author> uniqueAuthors, Map<String, Author> savedAuthorsMap, Map<String, Author> existingAuthorsMap) {
         if (uniqueAuthors.isEmpty()) {
             return;
         }
         
-        // Check for existing authors in database first
+        // Check for existing authors using pre-loaded data
         for (Author author : uniqueAuthors) {
-            Author existingAuthor = authorRepository.findByFullName(author.getFullName());
+            Author existingAuthor = existingAuthorsMap.get(author.getFullName());
             if (existingAuthor != null) {
                 // Use existing author
                 savedAuthorsMap.put(author.getFullName(), existingAuthor);
@@ -177,14 +253,14 @@ public class BookItemWriter implements ItemWriter<Book> {
         }
     }
     
-    private void saveGenresAndUpdateMappings(Set<Genre> uniqueGenres, Map<String, Genre> savedGenresMap) {
+    private void saveGenresAndUpdateMappings(Set<Genre> uniqueGenres, Map<String, Genre> savedGenresMap, Map<String, Genre> existingGenresMap) {
         if (uniqueGenres.isEmpty()) {
             return;
         }
         
-        // Check for existing genres in database first
+        // Check for existing genres using pre-loaded data
         for (Genre genre : uniqueGenres) {
-            Genre existingGenre = genreRepository.findByName(genre.getName());
+            Genre existingGenre = existingGenresMap.get(genre.getName());
             if (existingGenre != null) {
                 // Use existing genre
                 savedGenresMap.put(genre.getName(), existingGenre);
