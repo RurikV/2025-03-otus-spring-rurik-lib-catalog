@@ -21,4 +21,5 @@ public class CommentPageController {
     public String deleteCommentConfirm(@PathVariable String id) {
         return "comment/delete";
     }
+
 }

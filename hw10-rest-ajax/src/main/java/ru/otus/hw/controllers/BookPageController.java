@@ -36,4 +36,5 @@ public class BookPageController {
     public String deleteBookConfirm(@PathVariable String id) {
         return "book/delete";
     }
+
 }
