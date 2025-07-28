@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
-import ru.otus.hw.models.Genre;
+import ru.otus.hw.dto.GenreDto;
 import ru.otus.hw.services.GenreService;
 
 import java.util.List;
@@ -32,12 +32,12 @@ public class GenreHandler {
                 .doOnError(error -> log.error("[DEBUG_LOG] Error rendering genres page", error));
     }
 
-    private void logRetrievedGenres(List<Genre> genres) {
+    private void logRetrievedGenres(List<GenreDto> genres) {
         log.info("[DEBUG_LOG] Retrieved {} genres from service: {}", 
-                genres.size(), genres.stream().map(Genre::getName).toList());
+                genres.size(), genres.stream().map(GenreDto::getName).toList());
     }
 
-    private Mono<ServerResponse> renderGenresPage(List<Genre> genres) {
+    private Mono<ServerResponse> renderGenresPage(List<GenreDto> genres) {
         logGenresDetails(genres);
         java.util.Map<String, Object> model = createGenresModel(genres);
         
@@ -46,7 +46,7 @@ public class GenreHandler {
                 .render("genre/list", model);
     }
 
-    private void logGenresDetails(List<Genre> genres) {
+    private void logGenresDetails(List<GenreDto> genres) {
         log.info("[DEBUG_LOG] Rendering genre/list template with {} genres", genres.size());
         log.info("[DEBUG_LOG] Genres data structure: {}", genres);
         log.info("[DEBUG_LOG] First genre details: id={}, name={}", 
@@ -56,7 +56,7 @@ public class GenreHandler {
         log.info("[DEBUG_LOG] About to render template with model key 'genres' using Map approach");
     }
 
-    private java.util.Map<String, Object> createGenresModel(List<Genre> genres) {
+    private java.util.Map<String, Object> createGenresModel(List<GenreDto> genres) {
         java.util.Map<String, Object> model = new java.util.HashMap<>();
         model.put("genres", genres);
         log.info("[DEBUG_LOG] Model map created with genres key, map size: {}", model.size());
