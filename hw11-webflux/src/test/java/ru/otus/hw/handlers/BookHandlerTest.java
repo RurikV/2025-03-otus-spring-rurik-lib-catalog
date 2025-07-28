@@ -11,11 +11,11 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.otus.hw.config.ApiRouterConfig;
+import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.dto.BookCreateDto;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.BookUpdateDto;
-import ru.otus.hw.models.Author;
-import ru.otus.hw.models.Genre;
+import ru.otus.hw.dto.GenreDto;
 import ru.otus.hw.services.BookService;
 
 import java.util.List;
@@ -38,10 +38,10 @@ class BookHandlerTest {
     @Test
     @DisplayName("return all books")
     void shouldReturnAllBooks() {
-        var author = new Author("1", "Author Name");
-        var genre = new Genre("1", "Genre Name");
-        var book1 = new BookDto("1", "Book 1", author, List.of(genre));
-        var book2 = new BookDto("2", "Book 2", author, List.of(genre));
+        var authorDto = new AuthorDto("1", "Author Name");
+        var genreDto = new GenreDto("1", "Genre Name");
+        var book1 = new BookDto("1", "Book 1", authorDto, List.of(genreDto));
+        var book2 = new BookDto("2", "Book 2", authorDto, List.of(genreDto));
         
         given(bookService.findAll()).willReturn(Flux.fromIterable(List.of(book1, book2)));
 
@@ -58,9 +58,9 @@ class BookHandlerTest {
     @Test
     @DisplayName("return book by id")
     void shouldReturnBookById() {
-        var author = new Author("1", "Author Name");
-        var genre = new Genre("1", "Genre Name");
-        var bookDto = new BookDto("1", "Book Title", author, List.of(genre));
+        var authorDto = new AuthorDto("1", "Author Name");
+        var genreDto = new GenreDto("1", "Genre Name");
+        var bookDto = new BookDto("1", "Book Title", authorDto, List.of(genreDto));
         
         given(bookService.findById("1")).willReturn(Mono.just(bookDto));
 
@@ -89,10 +89,10 @@ class BookHandlerTest {
     @Test
     @DisplayName("create new book")
     void shouldCreateNewBook() {
-        var author = new Author("1", "Author Name");
-        var genre = new Genre("1", "Genre Name");
+        var authorDto = new AuthorDto("1", "Author Name");
+        var genreDto = new GenreDto("1", "Genre Name");
         var createDto = new BookCreateDto("New Book", "1", Set.of("1"));
-        var createdBook = new BookDto("1", "New Book", author, List.of(genre));
+        var createdBook = new BookDto("1", "New Book", authorDto, List.of(genreDto));
         
         given(bookService.create(any(BookCreateDto.class))).willReturn(Mono.just(createdBook));
 
@@ -111,10 +111,10 @@ class BookHandlerTest {
     @Test
     @DisplayName("update existing book")
     void shouldUpdateExistingBook() {
-        var author = new Author("1", "Author Name");
-        var genre = new Genre("1", "Genre Name");
+        var authorDto = new AuthorDto("1", "Author Name");
+        var genreDto = new GenreDto("1", "Genre Name");
         var updateDto = new BookUpdateDto("1", "Updated Book", "1", Set.of("1"));
-        var updatedBook = new BookDto("1", "Updated Book", author, List.of(genre));
+        var updatedBook = new BookDto("1", "Updated Book", authorDto, List.of(genreDto));
         
         given(bookService.update(any(BookUpdateDto.class))).willReturn(Mono.just(updatedBook));
 

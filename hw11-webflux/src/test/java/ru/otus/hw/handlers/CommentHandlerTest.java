@@ -13,10 +13,10 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
+import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.dto.BookDto;
-import ru.otus.hw.models.Author;
-import ru.otus.hw.models.Comment;
-import ru.otus.hw.models.Genre;
+import ru.otus.hw.dto.CommentDto;
+import ru.otus.hw.dto.GenreDto;
 import ru.otus.hw.services.BookService;
 import ru.otus.hw.services.CommentService;
 
@@ -63,9 +63,9 @@ class CommentHandlerTest {
     @Test
     @DisplayName("return new comment form page")
     void shouldReturnNewCommentFormPage() {
-        var author = new Author("1", "Author Name");
-        var genre = new Genre("1", "Genre Name");
-        var bookDto = new BookDto("1", "Book Title", author, List.of(genre));
+        var authorDto = new AuthorDto("1", "Author Name");
+        var genreDto = new GenreDto("1", "Genre Name");
+        var bookDto = new BookDto("1", "Book Title", authorDto, List.of(genreDto));
         
         given(bookService.findById("1")).willReturn(Mono.just(bookDto));
 
@@ -93,9 +93,9 @@ class CommentHandlerTest {
     @Test
     @DisplayName("handle comment creation form submission")
     void shouldHandleCommentCreationFormSubmission() {
-        var comment = new Comment("1", "Great book!", "1");
+        var commentDto = new CommentDto("1", "Great book!", "1");
         
-        given(commentService.create(any())).willReturn(Mono.just(comment));
+        given(commentService.create(any())).willReturn(Mono.just(commentDto));
 
         webTestClient.post()
                 .uri("/books/1/comments")
@@ -123,12 +123,12 @@ class CommentHandlerTest {
     @Test
     @DisplayName("return edit comment form page")
     void shouldReturnEditCommentFormPage() {
-        var comment = new Comment("1", "Great book!", "1");
-        var author = new Author("1", "Author Name");
-        var genre = new Genre("1", "Genre Name");
-        var bookDto = new BookDto("1", "Book Title", author, List.of(genre));
+        var commentDto = new CommentDto("1", "Great book!", "1");
+        var authorDto = new AuthorDto("1", "Author Name");
+        var genreDto = new GenreDto("1", "Genre Name");
+        var bookDto = new BookDto("1", "Book Title", authorDto, List.of(genreDto));
         
-        given(commentService.findById("1")).willReturn(Mono.just(comment));
+        given(commentService.findById("1")).willReturn(Mono.just(commentDto));
         given(bookService.findById("1")).willReturn(Mono.just(bookDto));
 
         webTestClient.get()
@@ -155,11 +155,11 @@ class CommentHandlerTest {
     @Test
     @DisplayName("handle comment update form submission")
     void shouldHandleCommentUpdateFormSubmission() {
-        var originalComment = new Comment("1", "Great book!", "1");
-        var updatedComment = new Comment("1", "Updated comment!", "1");
+        var originalCommentDto = new CommentDto("1", "Great book!", "1");
+        var updatedCommentDto = new CommentDto("1", "Updated comment!", "1");
         
-        given(commentService.findById("1")).willReturn(Mono.just(originalComment));
-        given(commentService.update(any())).willReturn(Mono.just(updatedComment));
+        given(commentService.findById("1")).willReturn(Mono.just(originalCommentDto));
+        given(commentService.update(any())).willReturn(Mono.just(updatedCommentDto));
 
         webTestClient.post()
                 .uri("/comments/1")
@@ -187,12 +187,12 @@ class CommentHandlerTest {
     @Test
     @DisplayName("return delete comment confirmation page")
     void shouldReturnDeleteCommentConfirmationPage() {
-        var comment = new Comment("1", "Great book!", "1");
-        var author = new Author("1", "Author Name");
-        var genre = new Genre("1", "Genre Name");
-        var bookDto = new BookDto("1", "Book Title", author, List.of(genre));
+        var commentDto = new CommentDto("1", "Great book!", "1");
+        var authorDto = new AuthorDto("1", "Author Name");
+        var genreDto = new GenreDto("1", "Genre Name");
+        var bookDto = new BookDto("1", "Book Title", authorDto, List.of(genreDto));
         
-        given(commentService.findById("1")).willReturn(Mono.just(comment));
+        given(commentService.findById("1")).willReturn(Mono.just(commentDto));
         given(bookService.findById("1")).willReturn(Mono.just(bookDto));
 
         webTestClient.get()
@@ -219,9 +219,9 @@ class CommentHandlerTest {
     @Test
     @DisplayName("handle comment deletion")
     void shouldHandleCommentDeletion() {
-        var comment = new Comment("1", "Great book!", "1");
+        var commentDto = new CommentDto("1", "Great book!", "1");
         
-        given(commentService.findById("1")).willReturn(Mono.just(comment));
+        given(commentService.findById("1")).willReturn(Mono.just(commentDto));
         given(commentService.deleteById("1")).willReturn(Mono.empty());
 
         webTestClient.post()

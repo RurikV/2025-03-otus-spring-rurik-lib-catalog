@@ -13,7 +13,7 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
-import ru.otus.hw.models.Genre;
+import ru.otus.hw.dto.GenreDto;
 import ru.otus.hw.services.GenreService;
 
 import java.util.List;
@@ -44,10 +44,10 @@ class GenreHandlerTest {
     @Test
     @DisplayName("return genres list page")
     void shouldReturnGenresListPage() {
-        var genre1 = new Genre("1", "Fiction");
-        var genre2 = new Genre("2", "Non-Fiction");
+        var genreDto1 = new GenreDto("1", "Fiction");
+        var genreDto2 = new GenreDto("2", "Non-Fiction");
         
-        given(genreService.findAll()).willReturn(Flux.fromIterable(List.of(genre1, genre2)));
+        given(genreService.findAll()).willReturn(Flux.fromIterable(List.of(genreDto1, genreDto2)));
 
         webTestClient.get()
                 .uri("/genres")

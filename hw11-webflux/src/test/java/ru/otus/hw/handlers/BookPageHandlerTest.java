@@ -11,9 +11,9 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.otus.hw.config.WebRouterConfig;
+import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.dto.BookDto;
-import ru.otus.hw.models.Author;
-import ru.otus.hw.models.Genre;
+import ru.otus.hw.dto.GenreDto;
 import ru.otus.hw.services.AuthorService;
 import ru.otus.hw.services.BookService;
 import ru.otus.hw.services.CommentService;
@@ -75,9 +75,9 @@ class BookPageHandlerTest {
     @Test
     @DisplayName("return book view page with bookId in model")
     void shouldReturnBookViewPageWithBookIdInModel() {
-        var author = new Author("1", "Author Name");
-        var genre = new Genre("1", "Genre Name");
-        var bookDto = new BookDto("1", "Book Title", author, List.of(genre));
+        var authorDto = new AuthorDto("1", "Author Name");
+        var genreDto = new GenreDto("1", "Genre Name");
+        var bookDto = new BookDto("1", "Book Title", authorDto, List.of(genreDto));
         
         given(bookService.findById("1")).willReturn(Mono.just(bookDto));
         given(commentService.findByBookId("1")).willReturn(Flux.empty());
@@ -93,11 +93,11 @@ class BookPageHandlerTest {
     @Test
     @DisplayName("return new book form page with authors and genres")
     void shouldReturnNewBookFormPageWithAuthorsAndGenres() {
-        var author = new Author("1", "Author Name");
-        var genre = new Genre("1", "Genre Name");
+        var authorDto = new AuthorDto("1", "Author Name");
+        var genreDto = new GenreDto("1", "Genre Name");
         
-        given(authorService.findAll()).willReturn(Flux.fromIterable(List.of(author)));
-        given(genreService.findAll()).willReturn(Flux.fromIterable(List.of(genre)));
+        given(authorService.findAll()).willReturn(Flux.fromIterable(List.of(authorDto)));
+        given(genreService.findAll()).willReturn(Flux.fromIterable(List.of(genreDto)));
 
         webTestClient.get()
                 .uri("/books/new")
@@ -110,13 +110,13 @@ class BookPageHandlerTest {
     @Test
     @DisplayName("return edit book form page with authors, genres and bookId")
     void shouldReturnEditBookFormPageWithAuthorsGenresAndBookId() {
-        var author = new Author("1", "Author Name");
-        var genre = new Genre("1", "Genre Name");
-        var bookDto = new BookDto("1", "Book Title", author, List.of(genre));
+        var authorDto = new AuthorDto("1", "Author Name");
+        var genreDto = new GenreDto("1", "Genre Name");
+        var bookDto = new BookDto("1", "Book Title", authorDto, List.of(genreDto));
         
         given(bookService.findById("1")).willReturn(Mono.just(bookDto));
-        given(authorService.findAll()).willReturn(Flux.fromIterable(List.of(author)));
-        given(genreService.findAll()).willReturn(Flux.fromIterable(List.of(genre)));
+        given(authorService.findAll()).willReturn(Flux.fromIterable(List.of(authorDto)));
+        given(genreService.findAll()).willReturn(Flux.fromIterable(List.of(genreDto)));
 
         webTestClient.get()
                 .uri("/books/1/edit")
@@ -140,9 +140,9 @@ class BookPageHandlerTest {
     @Test
     @DisplayName("handle book creation form submission")
     void shouldHandleBookCreationFormSubmission() {
-        var author = new Author("1", "Author Name");
-        var genre = new Genre("1", "Genre Name");
-        var createdBook = new BookDto("1", "New Book", author, List.of(genre));
+        var authorDto = new AuthorDto("1", "Author Name");
+        var genreDto = new GenreDto("1", "Genre Name");
+        var createdBook = new BookDto("1", "New Book", authorDto, List.of(genreDto));
         
         given(bookService.create(org.mockito.ArgumentMatchers.any())).willReturn(Mono.just(createdBook));
 
@@ -158,9 +158,9 @@ class BookPageHandlerTest {
     @Test
     @DisplayName("handle book update form submission")
     void shouldHandleBookUpdateFormSubmission() {
-        var author = new Author("1", "Author Name");
-        var genre = new Genre("1", "Genre Name");
-        var updatedBook = new BookDto("1", "Updated Book", author, List.of(genre));
+        var authorDto = new AuthorDto("1", "Author Name");
+        var genreDto = new GenreDto("1", "Genre Name");
+        var updatedBook = new BookDto("1", "Updated Book", authorDto, List.of(genreDto));
         
         given(bookService.update(org.mockito.ArgumentMatchers.any())).willReturn(Mono.just(updatedBook));
 
