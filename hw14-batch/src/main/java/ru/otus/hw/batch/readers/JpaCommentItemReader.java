@@ -9,39 +9,38 @@ import org.springframework.batch.item.UnexpectedInputException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
-import ru.otus.hw.models.mongo.MongoBook;
+import ru.otus.hw.models.jpa.Comment;
+import ru.otus.hw.repositories.CommentRepository;
 
 import java.util.Iterator;
 import java.util.List;
 
 @Component
 @Scope(value = "step", proxyMode = ScopedProxyMode.TARGET_CLASS)
-public class MongoBookItemReader implements ItemReader<MongoBook> {
+public class JpaCommentItemReader implements ItemReader<Comment> {
     
-    private static final Logger LOGGER = LoggerFactory.getLogger(MongoBookItemReader.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JpaCommentItemReader.class);
     
-    private final MongoTemplate mongoTemplate;
+    private final CommentRepository commentRepository;
 
-    private Iterator<MongoBook> bookIterator;
+    private Iterator<Comment> commentIterator;
 
     private boolean initialized = false;
     
     @Autowired
-    public MongoBookItemReader(MongoTemplate mongoTemplate) {
-        this.mongoTemplate = mongoTemplate;
+    public JpaCommentItemReader(CommentRepository commentRepository) {
+        this.commentRepository = commentRepository;
     }
     
     @Override
-    public MongoBook read() throws UnexpectedInputException, ParseException, NonTransientResourceException {
+    public Comment read() throws UnexpectedInputException, ParseException, NonTransientResourceException {
         if (!initialized) {
             initialize();
         }
         
-        if (bookIterator != null && bookIterator.hasNext()) {
-            return bookIterator.next();
+        if (commentIterator != null && commentIterator.hasNext()) {
+            return commentIterator.next();
         }
         
         return null; // End of data
@@ -49,13 +48,14 @@ public class MongoBookItemReader implements ItemReader<MongoBook> {
     
     public void reset() {
         initialized = false;
-        bookIterator = null;
+        commentIterator = null;
     }
     
     private void initialize() {
-        List<MongoBook> books = mongoTemplate.find(new Query(), MongoBook.class);
-        bookIterator = books.iterator();
+        // Use only findAll operation - no complex queries
+        List<Comment> comments = commentRepository.findAll();
+        commentIterator = comments.iterator();
         initialized = true;
-        LOGGER.debug("MongoBookItemReader initialized with {} books", books.size());
+        LOGGER.debug("JpaCommentItemReader initialized with {} comments", comments.size());
     }
 }

@@ -16,7 +16,5 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @NonNull
     List<Book> findAll();
     
-    Book findByTitle(String title);
-    
-    List<Book> findByTitleIn(List<String> titles);
+    // Only findAll() is used in simplified migration - no complex queries needed
 }
