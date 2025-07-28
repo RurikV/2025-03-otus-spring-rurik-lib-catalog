@@ -1,5 +1,7 @@
 package ru.otus.hw.mappers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.otus.hw.models.jpa.Author;
@@ -17,6 +19,8 @@ import java.util.stream.Collectors;
 
 @Component
 public class EntityMapper {
+    
+    private static final Logger logger = LoggerFactory.getLogger(EntityMapper.class);
     
     private final IdMappingService idMappingService;
     
@@ -84,8 +88,7 @@ public class EntityMapper {
         if (mongoComment.getBook() != null) {
             String mongoBookId = mongoComment.getBook().getId();
             Long bookId = idMappingService.getBookId(mongoBookId);
-            System.out.println("[DEBUG_LOG] Mapping comment for MongoDB book ID: " + mongoBookId + 
-                              " -> JPA book ID: " + bookId);
+            logger.debug("Mapping comment for MongoDB book ID: {} -> JPA book ID: {}", mongoBookId, bookId);
             
             Book book = new Book();
             book.setId(bookId);

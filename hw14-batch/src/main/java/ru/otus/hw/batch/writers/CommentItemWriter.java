@@ -1,5 +1,7 @@
 package ru.otus.hw.batch.writers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,8 @@ import java.util.List;
 
 @Component
 public class CommentItemWriter implements ItemWriter<Comment> {
+    
+    private static final Logger logger = LoggerFactory.getLogger(CommentItemWriter.class);
     
     private final CommentRepository commentRepository;
     
@@ -32,13 +36,12 @@ public class CommentItemWriter implements ItemWriter<Comment> {
             
             if (existingComment != null) {
                 // Comment already exists, skip saving
-                System.out.println("[DEBUG_LOG] Found existing comment: " + existingComment.getText() + 
-                                  " for book ID: " + existingComment.getBook().getId());
+                logger.debug("Found existing comment: {} for book ID: {}", existingComment.getText(), existingComment.getBook().getId());
             } else {
                 // Save new comment
                 commentRepository.save(comment);
-                System.out.println("[DEBUG_LOG] Saved comment: " + comment.getText() + 
-                                  " for book ID: " + (comment.getBook() != null ? comment.getBook().getId() : "null"));
+                logger.debug("Saved comment: {} for book ID: {}", comment.getText(), 
+                           comment.getBook() != null ? comment.getBook().getId() : "null");
             }
         }
     }

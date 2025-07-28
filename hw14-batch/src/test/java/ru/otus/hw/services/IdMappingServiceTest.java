@@ -2,10 +2,14 @@ package ru.otus.hw.services;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class IdMappingServiceTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(IdMappingServiceTest.class);
 
     private IdMappingService idMappingService;
 

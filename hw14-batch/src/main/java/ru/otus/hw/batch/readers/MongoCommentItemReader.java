@@ -1,5 +1,7 @@
 package ru.otus.hw.batch.readers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.NonTransientResourceException;
 import org.springframework.batch.item.ParseException;
@@ -18,6 +20,8 @@ import java.util.List;
 @Component
 @Scope(value = "step", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class MongoCommentItemReader implements ItemReader<MongoComment> {
+    
+    private static final Logger logger = LoggerFactory.getLogger(MongoCommentItemReader.class);
     
     private final MongoTemplate mongoTemplate;
 
@@ -52,6 +56,6 @@ public class MongoCommentItemReader implements ItemReader<MongoComment> {
         List<MongoComment> comments = mongoTemplate.find(new Query(), MongoComment.class);
         commentIterator = comments.iterator();
         initialized = true;
-        System.out.println("[DEBUG_LOG] MongoCommentItemReader initialized with " + comments.size() + " comments");
+        logger.debug("MongoCommentItemReader initialized with {} comments", comments.size());
     }
 }

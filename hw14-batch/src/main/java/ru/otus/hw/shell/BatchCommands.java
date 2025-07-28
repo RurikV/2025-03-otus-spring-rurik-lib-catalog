@@ -1,5 +1,7 @@
 package ru.otus.hw.shell;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
@@ -13,6 +15,8 @@ import ru.otus.hw.services.IdMappingService;
 
 @ShellComponent
 public class BatchCommands {
+
+    private static final Logger logger = LoggerFactory.getLogger(BatchCommands.class);
 
     private final JobLauncher jobLauncher;
 
@@ -32,7 +36,7 @@ public class BatchCommands {
         try {
             if (restart) {
                 idMappingService.clearMappings();
-                System.out.println("[DEBUG_LOG] Cleared ID mappings for restart");
+                logger.debug("Cleared ID mappings for restart");
             }
             
             JobParameters jobParameters = new JobParametersBuilder()

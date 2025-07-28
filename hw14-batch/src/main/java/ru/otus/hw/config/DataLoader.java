@@ -1,5 +1,7 @@
 package ru.otus.hw.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -13,6 +15,8 @@ import java.util.Arrays;
 
 @Component
 public class DataLoader implements CommandLineRunner {
+    
+    private static final Logger logger = LoggerFactory.getLogger(DataLoader.class);
     
     private final MongoTemplate mongoTemplate;
     
@@ -101,10 +105,10 @@ public class DataLoader implements CommandLineRunner {
     }
     
     private void logDataLoadingResults() {
-        System.out.println("[DEBUG_LOG] Test data loaded into MongoDB:");
-        System.out.println("[DEBUG_LOG] - 3 authors");
-        System.out.println("[DEBUG_LOG] - 4 genres");
-        System.out.println("[DEBUG_LOG] - 4 books");
-        System.out.println("[DEBUG_LOG] - 5 comments");
+        logger.debug("Test data loaded into MongoDB:");
+        logger.debug("- 3 authors");
+        logger.debug("- 4 genres");
+        logger.debug("- 4 books");
+        logger.debug("- 5 comments");
     }
 }

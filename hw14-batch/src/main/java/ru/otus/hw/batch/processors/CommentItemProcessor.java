@@ -1,5 +1,7 @@
 package ru.otus.hw.batch.processors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
@@ -10,6 +12,8 @@ import ru.otus.hw.models.mongo.MongoComment;
 
 @Component
 public class CommentItemProcessor implements ItemProcessor<MongoComment, Comment> {
+    
+    private static final Logger logger = LoggerFactory.getLogger(CommentItemProcessor.class);
     
     private final EntityMapper entityMapper;
     
@@ -24,8 +28,8 @@ public class CommentItemProcessor implements ItemProcessor<MongoComment, Comment
         Comment comment = entityMapper.mapToComment(mongoComment);
         
         // Log the transformation for debugging
-        System.out.println("[DEBUG_LOG] Processing comment: " + mongoComment.getText() + 
-                          " for book ID: " + (comment.getBook() != null ? comment.getBook().getId() : "null"));
+        logger.debug("Processing comment: {} for book ID: {}", mongoComment.getText(), 
+                    comment.getBook() != null ? comment.getBook().getId() : "null");
         
         return comment;
     }

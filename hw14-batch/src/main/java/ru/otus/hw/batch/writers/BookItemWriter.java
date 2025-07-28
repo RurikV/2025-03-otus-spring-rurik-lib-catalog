@@ -1,5 +1,7 @@
 package ru.otus.hw.batch.writers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,8 @@ import java.util.Set;
 
 @Component
 public class BookItemWriter implements ItemWriter<Book> {
+    
+    private static final Logger logger = LoggerFactory.getLogger(BookItemWriter.class);
     
     private final BookRepository bookRepository;
 
@@ -110,8 +114,7 @@ public class BookItemWriter implements ItemWriter<Book> {
         for (Book book : books) {
             Book existingBook = bookRepository.findByTitle(book.getTitle());
             if (existingBook != null) {
-                System.out.println("[DEBUG_LOG] Found existing book: " + existingBook.getTitle() + 
-                                  " with database ID: " + existingBook.getId());
+                logger.debug("Found existing book: {} with database ID: {}", existingBook.getTitle(), existingBook.getId());
                 updateBookIdMapping(existingBook);
             } else {
                 booksToSave.add(book);
@@ -124,8 +127,7 @@ public class BookItemWriter implements ItemWriter<Book> {
         if (!booksToSave.isEmpty()) {
             bookRepository.saveAll(booksToSave);
             for (Book book : booksToSave) {
-                System.out.println("[DEBUG_LOG] Saved book: " + book.getTitle() + 
-                                  " with ID: " + book.getId());
+                logger.debug("Saved book: {} with ID: {}", book.getTitle(), book.getId());
                 updateBookIdMapping(book);
             }
         }
@@ -152,14 +154,12 @@ public class BookItemWriter implements ItemWriter<Book> {
             if (existingAuthor != null) {
                 // Use existing author
                 savedAuthorsMap.put(author.getFullName(), existingAuthor);
-                System.out.println("[DEBUG_LOG] Found existing author: " + existingAuthor.getFullName() + 
-                                  " with database ID: " + existingAuthor.getId());
+                logger.debug("Found existing author: {} with database ID: {}", existingAuthor.getFullName(), existingAuthor.getId());
             } else {
                 // Save new author
                 Author savedAuthor = authorRepository.save(author);
                 savedAuthorsMap.put(author.getFullName(), savedAuthor);
-                System.out.println("[DEBUG_LOG] Saved author: " + savedAuthor.getFullName() + 
-                                  " with database ID: " + savedAuthor.getId());
+                logger.debug("Saved author: {} with database ID: {}", savedAuthor.getFullName(), savedAuthor.getId());
             }
         }
     }
@@ -177,14 +177,12 @@ public class BookItemWriter implements ItemWriter<Book> {
             if (existingGenre != null) {
                 // Use existing genre
                 savedGenresMap.put(genre.getName(), existingGenre);
-                System.out.println("[DEBUG_LOG] Found existing genre: " + existingGenre.getName() + 
-                                  " with database ID: " + existingGenre.getId());
+                logger.debug("Found existing genre: {} with database ID: {}", existingGenre.getName(), existingGenre.getId());
             } else {
                 // Save new genre
                 Genre savedGenre = genreRepository.save(genre);
                 savedGenresMap.put(genre.getName(), savedGenre);
-                System.out.println("[DEBUG_LOG] Saved genre: " + savedGenre.getName() + 
-                                  " with database ID: " + savedGenre.getId());
+                logger.debug("Saved genre: {} with database ID: {}", savedGenre.getName(), savedGenre.getId());
             }
         }
     }

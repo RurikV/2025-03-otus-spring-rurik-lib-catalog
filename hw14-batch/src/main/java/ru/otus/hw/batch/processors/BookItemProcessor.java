@@ -1,5 +1,7 @@
 package ru.otus.hw.batch.processors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -9,6 +11,8 @@ import ru.otus.hw.models.mongo.MongoBook;
 
 @Component
 public class BookItemProcessor implements ItemProcessor<MongoBook, Book> {
+
+    private static final Logger logger = LoggerFactory.getLogger(BookItemProcessor.class);
 
     private final EntityMapper entityMapper;
 
@@ -27,8 +31,7 @@ public class BookItemProcessor implements ItemProcessor<MongoBook, Book> {
         Book book = entityMapper.mapToBook(mongoBook);
         
         // Log the transformation for debugging
-        System.out.println("[DEBUG_LOG] Processing book: " + mongoBook.getTitle() + 
-                          " -> ID: " + book.getId());
+        logger.debug("Processing book: {} -> ID: {}", mongoBook.getTitle(), book.getId());
         
         return book;
     }

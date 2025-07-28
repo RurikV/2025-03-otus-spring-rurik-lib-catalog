@@ -1,5 +1,7 @@
 package ru.otus.hw.batch.readers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.NonTransientResourceException;
 import org.springframework.batch.item.ParseException;
@@ -18,6 +20,8 @@ import java.util.List;
 @Component
 @Scope(value = "step", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class MongoBookItemReader implements ItemReader<MongoBook> {
+    
+    private static final Logger logger = LoggerFactory.getLogger(MongoBookItemReader.class);
     
     private final MongoTemplate mongoTemplate;
 
@@ -52,6 +56,6 @@ public class MongoBookItemReader implements ItemReader<MongoBook> {
         List<MongoBook> books = mongoTemplate.find(new Query(), MongoBook.class);
         bookIterator = books.iterator();
         initialized = true;
-        System.out.println("[DEBUG_LOG] MongoBookItemReader initialized with " + books.size() + " books");
+        logger.debug("MongoBookItemReader initialized with {} books", books.size());
     }
 }
