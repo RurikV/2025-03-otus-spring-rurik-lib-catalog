@@ -13,7 +13,7 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
-import ru.otus.hw.models.Author;
+import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.services.AuthorService;
 
 import java.util.List;
@@ -44,8 +44,8 @@ class AuthorHandlerTest {
     @Test
     @DisplayName("return authors list page")
     void shouldReturnAuthorsListPage() {
-        var author1 = new Author("1", "Author One");
-        var author2 = new Author("2", "Author Two");
+        var author1 = new AuthorDto("1", "Author One");
+        var author2 = new AuthorDto("2", "Author Two");
         
         given(authorService.findAll()).willReturn(Flux.fromIterable(List.of(author1, author2)));
 
