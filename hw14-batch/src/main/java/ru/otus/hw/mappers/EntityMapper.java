@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @Component
 public class EntityMapper {
     
-    private static final Logger logger = LoggerFactory.getLogger(EntityMapper.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EntityMapper.class);
     
     private final IdMappingService idMappingService;
     
@@ -88,7 +88,7 @@ public class EntityMapper {
         if (mongoComment.getBook() != null) {
             String mongoBookId = mongoComment.getBook().getId();
             Long bookId = idMappingService.getBookId(mongoBookId);
-            logger.debug("Mapping comment for MongoDB book ID: {} -> JPA book ID: {}", mongoBookId, bookId);
+            LOGGER.debug("Mapping comment for MongoDB book ID: {} -> JPA book ID: {}", mongoBookId, bookId);
             
             Book book = new Book();
             book.setId(bookId);

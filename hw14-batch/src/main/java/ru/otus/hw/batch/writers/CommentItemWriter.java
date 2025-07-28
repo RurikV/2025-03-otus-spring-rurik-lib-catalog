@@ -14,7 +14,7 @@ import java.util.List;
 @Component
 public class CommentItemWriter implements ItemWriter<Comment> {
     
-    private static final Logger logger = LoggerFactory.getLogger(CommentItemWriter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CommentItemWriter.class);
     
     private final CommentRepository commentRepository;
     
@@ -36,11 +36,12 @@ public class CommentItemWriter implements ItemWriter<Comment> {
             
             if (existingComment != null) {
                 // Comment already exists, skip saving
-                logger.debug("Found existing comment: {} for book ID: {}", existingComment.getText(), existingComment.getBook().getId());
+                LOGGER.debug("Found existing comment: {} for book ID: {}", 
+                           existingComment.getText(), existingComment.getBook().getId());
             } else {
                 // Save new comment
                 commentRepository.save(comment);
-                logger.debug("Saved comment: {} for book ID: {}", comment.getText(), 
+                LOGGER.debug("Saved comment: {} for book ID: {}", comment.getText(), 
                            comment.getBook() != null ? comment.getBook().getId() : "null");
             }
         }

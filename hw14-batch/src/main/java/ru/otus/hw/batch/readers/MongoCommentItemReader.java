@@ -21,7 +21,7 @@ import java.util.List;
 @Scope(value = "step", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class MongoCommentItemReader implements ItemReader<MongoComment> {
     
-    private static final Logger logger = LoggerFactory.getLogger(MongoCommentItemReader.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MongoCommentItemReader.class);
     
     private final MongoTemplate mongoTemplate;
 
@@ -56,6 +56,6 @@ public class MongoCommentItemReader implements ItemReader<MongoComment> {
         List<MongoComment> comments = mongoTemplate.find(new Query(), MongoComment.class);
         commentIterator = comments.iterator();
         initialized = true;
-        logger.debug("MongoCommentItemReader initialized with {} comments", comments.size());
+        LOGGER.debug("MongoCommentItemReader initialized with {} comments", comments.size());
     }
 }

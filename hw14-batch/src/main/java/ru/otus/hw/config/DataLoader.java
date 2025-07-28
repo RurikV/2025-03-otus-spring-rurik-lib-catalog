@@ -16,7 +16,7 @@ import java.util.Arrays;
 @Component
 public class DataLoader implements CommandLineRunner {
     
-    private static final Logger logger = LoggerFactory.getLogger(DataLoader.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataLoader.class);
     
     private final MongoTemplate mongoTemplate;
     
@@ -105,10 +105,10 @@ public class DataLoader implements CommandLineRunner {
     }
     
     private void logDataLoadingResults() {
-        logger.debug("Test data loaded into MongoDB:");
-        logger.debug("- 3 authors");
-        logger.debug("- 4 genres");
-        logger.debug("- 4 books");
-        logger.debug("- 5 comments");
+        LOGGER.debug("Test data loaded into MongoDB:");
+        LOGGER.debug("- 3 authors");
+        LOGGER.debug("- 4 genres");
+        LOGGER.debug("- 4 books");
+        LOGGER.debug("- 5 comments");
     }
 }

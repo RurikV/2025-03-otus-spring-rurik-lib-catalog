@@ -30,7 +30,7 @@ import java.util.concurrent.ExecutionException;
 @Component
 public class BookItemWriter implements ItemWriter<Book> {
     
-    private static final Logger logger = LoggerFactory.getLogger(BookItemWriter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BookItemWriter.class);
     
     private final BookRepository bookRepository;
 
@@ -59,39 +59,15 @@ public class BookItemWriter implements ItemWriter<Book> {
     public void write(Chunk<? extends Book> chunk) {
         List<? extends Book> books = chunk.getItems();
         
-        // Pre-load all existing entities to avoid database queries during transformation
-        Set<String> bookTitles = collectBookTitles(books);
-        Set<String> authorNames = collectAuthorNames(books);
-        Set<String> genreNames = collectGenreNames(books);
+        Map<String, Book> existingBooksMap = new HashMap<>();
+        Map<String, Author> existingAuthorsMap = new HashMap<>();
+        Map<String, Genre> existingGenresMap = new HashMap<>();
+        preloadAllExistingEntities(books, existingBooksMap, existingAuthorsMap, existingGenresMap);
         
-        Map<String, Book> existingBooksMap = preloadExistingBooks(bookTitles);
-        Map<String, Author> existingAuthorsMap = preloadExistingAuthors(authorNames);
-        Map<String, Genre> existingGenresMap = preloadExistingGenres(genreNames);
-        
-        Set<Author> uniqueAuthors = collectUniqueAuthors(books);
-        Set<Genre> uniqueGenres = collectUniqueGenres(books);
-        
-        // Create local maps for this chunk processing
         Map<String, Author> savedAuthorsMap = new HashMap<>();
         Map<String, Genre> savedGenresMap = new HashMap<>();
-        
-        // Process authors and genres in parallel
-        CompletableFuture<Void> authorsFuture = CompletableFuture.runAsync(() -> {
-            saveAuthorsAndUpdateMappings(uniqueAuthors, savedAuthorsMap, existingAuthorsMap);
-        });
-        
-        CompletableFuture<Void> genresFuture = CompletableFuture.runAsync(() -> {
-            saveGenresAndUpdateMappings(uniqueGenres, savedGenresMap, existingGenresMap);
-        });
-        
-        try {
-            // Wait for both authors and genres processing to complete
-            CompletableFuture.allOf(authorsFuture, genresFuture).get();
-            logger.debug("Parallel processing of authors and genres completed");
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("Error during parallel processing of authors and genres", e);
-            throw new RuntimeException("Failed to process authors and genres in parallel", e);
-        }
+        processAuthorsAndGenresInParallel(books, existingAuthorsMap, existingGenresMap, 
+                                        savedAuthorsMap, savedGenresMap);
         
         // Ensure all entities are committed before books reference them
         entityManager.flush();
@@ -145,15 +121,20 @@ public class BookItemWriter implements ItemWriter<Book> {
     private Set<String> collectGenreNames(List<? extends Book> books) {
         Set<String> genreNames = new HashSet<>();
         for (Book book : books) {
-            if (book.getGenres() != null) {
-                for (Genre genre : book.getGenres()) {
-                    if (genre.getName() != null) {
-                        genreNames.add(genre.getName());
-                    }
-                }
+            if (book.getGenres() == null) {
+                continue;
             }
+            addGenreNamesToSet(book.getGenres(), genreNames);
         }
         return genreNames;
+    }
+    
+    private void addGenreNamesToSet(List<Genre> genres, Set<String> genreNames) {
+        for (Genre genre : genres) {
+            if (genre.getName() != null) {
+                genreNames.add(genre.getName());
+            }
+        }
     }
     
     private Map<String, Book> preloadExistingBooks(Set<String> titles) {
@@ -189,6 +170,47 @@ public class BookItemWriter implements ItemWriter<Book> {
         return existingGenres;
     }
     
+    private void preloadAllExistingEntities(List<? extends Book> books, 
+                                          Map<String, Book> existingBooksMap,
+                                          Map<String, Author> existingAuthorsMap,
+                                          Map<String, Genre> existingGenresMap) {
+        // Pre-load all existing entities to avoid database queries during transformation
+        Set<String> bookTitles = collectBookTitles(books);
+        Set<String> authorNames = collectAuthorNames(books);
+        Set<String> genreNames = collectGenreNames(books);
+        
+        existingBooksMap.putAll(preloadExistingBooks(bookTitles));
+        existingAuthorsMap.putAll(preloadExistingAuthors(authorNames));
+        existingGenresMap.putAll(preloadExistingGenres(genreNames));
+    }
+    
+    private void processAuthorsAndGenresInParallel(List<? extends Book> books,
+                                                 Map<String, Author> existingAuthorsMap,
+                                                 Map<String, Genre> existingGenresMap,
+                                                 Map<String, Author> savedAuthorsMap,
+                                                 Map<String, Genre> savedGenresMap) {
+        Set<Author> uniqueAuthors = collectUniqueAuthors(books);
+        Set<Genre> uniqueGenres = collectUniqueGenres(books);
+        
+        // Process authors and genres in parallel
+        CompletableFuture<Void> authorsFuture = CompletableFuture.runAsync(() -> {
+            saveAuthorsAndUpdateMappings(uniqueAuthors, savedAuthorsMap, existingAuthorsMap);
+        });
+        
+        CompletableFuture<Void> genresFuture = CompletableFuture.runAsync(() -> {
+            saveGenresAndUpdateMappings(uniqueGenres, savedGenresMap, existingGenresMap);
+        });
+        
+        try {
+            // Wait for both authors and genres processing to complete
+            CompletableFuture.allOf(authorsFuture, genresFuture).get();
+            LOGGER.debug("Parallel processing of authors and genres completed");
+        } catch (InterruptedException | ExecutionException e) {
+            LOGGER.error("Error during parallel processing of authors and genres", e);
+            throw new RuntimeException("Failed to process authors and genres in parallel", e);
+        }
+    }
+    
     
     private void saveBooks(List<? extends Book> books, Map<String, Book> existingBooksMap) {
         if (books.isEmpty()) {
@@ -205,7 +227,8 @@ public class BookItemWriter implements ItemWriter<Book> {
         for (Book book : books) {
             Book existingBook = existingBooksMap.get(book.getTitle());
             if (existingBook != null) {
-                logger.debug("Found existing book: {} with database ID: {}", existingBook.getTitle(), existingBook.getId());
+                LOGGER.debug("Found existing book: {} with database ID: {}", 
+                           existingBook.getTitle(), existingBook.getId());
                 updateBookIdMapping(existingBook);
             } else {
                 booksToSave.add(book);
@@ -218,7 +241,7 @@ public class BookItemWriter implements ItemWriter<Book> {
         if (!booksToSave.isEmpty()) {
             bookRepository.saveAll(booksToSave);
             for (Book book : booksToSave) {
-                logger.debug("Saved book: {} with ID: {}", book.getTitle(), book.getId());
+                LOGGER.debug("Saved book: {} with ID: {}", book.getTitle(), book.getId());
                 updateBookIdMapping(book);
             }
         }
@@ -232,7 +255,9 @@ public class BookItemWriter implements ItemWriter<Book> {
         }
     }
     
-    private void saveAuthorsAndUpdateMappings(Set<Author> uniqueAuthors, Map<String, Author> savedAuthorsMap, Map<String, Author> existingAuthorsMap) {
+    private void saveAuthorsAndUpdateMappings(Set<Author> uniqueAuthors, 
+                                             Map<String, Author> savedAuthorsMap, 
+                                             Map<String, Author> existingAuthorsMap) {
         if (uniqueAuthors.isEmpty()) {
             return;
         }
@@ -243,17 +268,21 @@ public class BookItemWriter implements ItemWriter<Book> {
             if (existingAuthor != null) {
                 // Use existing author
                 savedAuthorsMap.put(author.getFullName(), existingAuthor);
-                logger.debug("Found existing author: {} with database ID: {}", existingAuthor.getFullName(), existingAuthor.getId());
+                LOGGER.debug("Found existing author: {} with database ID: {}", 
+                           existingAuthor.getFullName(), existingAuthor.getId());
             } else {
                 // Save new author
                 Author savedAuthor = authorRepository.save(author);
                 savedAuthorsMap.put(author.getFullName(), savedAuthor);
-                logger.debug("Saved author: {} with database ID: {}", savedAuthor.getFullName(), savedAuthor.getId());
+                LOGGER.debug("Saved author: {} with database ID: {}", 
+                           savedAuthor.getFullName(), savedAuthor.getId());
             }
         }
     }
     
-    private void saveGenresAndUpdateMappings(Set<Genre> uniqueGenres, Map<String, Genre> savedGenresMap, Map<String, Genre> existingGenresMap) {
+    private void saveGenresAndUpdateMappings(Set<Genre> uniqueGenres, 
+                                            Map<String, Genre> savedGenresMap, 
+                                            Map<String, Genre> existingGenresMap) {
         if (uniqueGenres.isEmpty()) {
             return;
         }
@@ -264,17 +293,21 @@ public class BookItemWriter implements ItemWriter<Book> {
             if (existingGenre != null) {
                 // Use existing genre
                 savedGenresMap.put(genre.getName(), existingGenre);
-                logger.debug("Found existing genre: {} with database ID: {}", existingGenre.getName(), existingGenre.getId());
+                LOGGER.debug("Found existing genre: {} with database ID: {}", 
+                           existingGenre.getName(), existingGenre.getId());
             } else {
                 // Save new genre
                 Genre savedGenre = genreRepository.save(genre);
                 savedGenresMap.put(genre.getName(), savedGenre);
-                logger.debug("Saved genre: {} with database ID: {}", savedGenre.getName(), savedGenre.getId());
+                LOGGER.debug("Saved genre: {} with database ID: {}", 
+                           savedGenre.getName(), savedGenre.getId());
             }
         }
     }
     
-    private void updateBookReferences(List<? extends Book> books, Map<String, Author> savedAuthorsMap, Map<String, Genre> savedGenresMap) {
+    private void updateBookReferences(List<? extends Book> books, 
+                                     Map<String, Author> savedAuthorsMap, 
+                                     Map<String, Genre> savedGenresMap) {
         for (Book book : books) {
             updateBookAuthorReference(book, savedAuthorsMap);
             updateBookGenreReferences(book, savedGenresMap);

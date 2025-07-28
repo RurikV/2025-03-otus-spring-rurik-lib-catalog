@@ -13,7 +13,7 @@ import ru.otus.hw.models.mongo.MongoComment;
 @Component
 public class CommentItemProcessor implements ItemProcessor<MongoComment, Comment> {
     
-    private static final Logger logger = LoggerFactory.getLogger(CommentItemProcessor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CommentItemProcessor.class);
     
     private final EntityMapper entityMapper;
     
@@ -28,7 +28,7 @@ public class CommentItemProcessor implements ItemProcessor<MongoComment, Comment
         Comment comment = entityMapper.mapToComment(mongoComment);
         
         // Log the transformation for debugging
-        logger.debug("Processing comment: {} for book ID: {}", mongoComment.getText(), 
+        LOGGER.debug("Processing comment: {} for book ID: {}", mongoComment.getText(), 
                     comment.getBook() != null ? comment.getBook().getId() : "null");
         
         return comment;

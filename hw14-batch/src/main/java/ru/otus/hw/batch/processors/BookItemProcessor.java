@@ -12,7 +12,7 @@ import ru.otus.hw.models.mongo.MongoBook;
 @Component
 public class BookItemProcessor implements ItemProcessor<MongoBook, Book> {
 
-    private static final Logger logger = LoggerFactory.getLogger(BookItemProcessor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BookItemProcessor.class);
 
     private final EntityMapper entityMapper;
 
@@ -31,7 +31,7 @@ public class BookItemProcessor implements ItemProcessor<MongoBook, Book> {
         Book book = entityMapper.mapToBook(mongoBook);
         
         // Log the transformation for debugging
-        logger.debug("Processing book: {} -> ID: {}", mongoBook.getTitle(), book.getId());
+        LOGGER.debug("Processing book: {} -> ID: {}", mongoBook.getTitle(), book.getId());
         
         return book;
     }

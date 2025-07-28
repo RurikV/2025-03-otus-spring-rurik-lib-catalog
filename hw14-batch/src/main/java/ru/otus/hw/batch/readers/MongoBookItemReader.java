@@ -21,7 +21,7 @@ import java.util.List;
 @Scope(value = "step", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class MongoBookItemReader implements ItemReader<MongoBook> {
     
-    private static final Logger logger = LoggerFactory.getLogger(MongoBookItemReader.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MongoBookItemReader.class);
     
     private final MongoTemplate mongoTemplate;
 
@@ -56,6 +56,6 @@ public class MongoBookItemReader implements ItemReader<MongoBook> {
         List<MongoBook> books = mongoTemplate.find(new Query(), MongoBook.class);
         bookIterator = books.iterator();
         initialized = true;
-        logger.debug("MongoBookItemReader initialized with {} books", books.size());
+        LOGGER.debug("MongoBookItemReader initialized with {} books", books.size());
     }
 }
