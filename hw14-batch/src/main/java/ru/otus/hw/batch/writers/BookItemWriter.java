@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 @Component
 public class BookItemWriter implements ItemWriter<Book> {
@@ -64,13 +66,26 @@ public class BookItemWriter implements ItemWriter<Book> {
         Map<String, Author> savedAuthorsMap = new HashMap<>();
         Map<String, Genre> savedGenresMap = new HashMap<>();
         
-        // Save authors and update ID mappings
-        saveAuthorsAndUpdateMappings(uniqueAuthors, savedAuthorsMap);
-        entityManager.flush(); // Ensure authors are committed before books reference them
+        // Process authors and genres in parallel
+        CompletableFuture<Void> authorsFuture = CompletableFuture.runAsync(() -> {
+            saveAuthorsAndUpdateMappings(uniqueAuthors, savedAuthorsMap);
+        });
         
-        // Save genres and update ID mappings
-        saveGenresAndUpdateMappings(uniqueGenres, savedGenresMap);
-        entityManager.flush(); // Ensure genres are committed before books reference them
+        CompletableFuture<Void> genresFuture = CompletableFuture.runAsync(() -> {
+            saveGenresAndUpdateMappings(uniqueGenres, savedGenresMap);
+        });
+        
+        try {
+            // Wait for both authors and genres processing to complete
+            CompletableFuture.allOf(authorsFuture, genresFuture).get();
+            logger.debug("Parallel processing of authors and genres completed");
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("Error during parallel processing of authors and genres", e);
+            throw new RuntimeException("Failed to process authors and genres in parallel", e);
+        }
+        
+        // Ensure all entities are committed before books reference them
+        entityManager.flush();
         
         // Update books to reference the correct database IDs
         updateBookReferences(books, savedAuthorsMap, savedGenresMap);
