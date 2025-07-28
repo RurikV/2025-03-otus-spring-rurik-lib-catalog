@@ -1,43 +1,35 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="#{authors.list.title}">Authors</title>
+    <title>Authors</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" th:href="@{/}" th:text="#{app.title}">Library Catalog</a>
+            <a class="navbar-brand" href="/">Library Catalog</a>
             <div class="navbar-nav">
-                <a class="nav-link" th:href="@{/}" th:text="#{nav.books}">Books</a>
-                <a class="nav-link active" th:href="@{/authors}" th:text="#{nav.authors}">Authors</a>
-                <a class="nav-link" th:href="@{/genres}" th:text="#{nav.genres}">Genres</a>
+                <a class="nav-link" href="/">Books</a>
+                <a class="nav-link active" href="/authors">Authors</a>
+                <a class="nav-link" href="/genres">Genres</a>
             </div>
         </div>
     </nav>
 
     <div class="container mt-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 th:text="#{authors.list.title}">Authors</h1>
-            <a th:href="@{/}" class="btn btn-outline-primary" th:text="#{action.back.books}">Back to Books</a>
+            <h1>Authors</h1>
+            <a href="/" class="btn btn-outline-primary">Back to Books</a>
         </div>
 
-        <div th:if="${#lists.isEmpty(authors)}" class="alert alert-info" th:text="#{authors.list.empty}">
-            No authors found.
-        </div>
-
-        <div th:unless="${#lists.isEmpty(authors)}" class="row">
-            <div th:each="author : ${authors}" class="col-md-6 col-lg-4 mb-3">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title" th:text="${author.fullName}">Author Name</h5>
-                        <p class="card-text">
-                            <small class="text-muted" th:text="#{author.id}">ID:</small>
-                            <small class="text-muted" th:text="${author.id}">Author ID</small>
-                        </p>
-                    </div>
+        <div id="alert-container"></div>
+        
+        <div id="authors-container">
+            <div class="d-flex justify-content-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
                 </div>
             </div>
         </div>
@@ -45,10 +37,10 @@
         <div class="mt-4">
             <div class="card">
                 <div class="card-body text-center">
-                    <h5 class="card-title" th:text="#{navigation.title}">Navigation</h5>
+                    <h5 class="card-title">Navigation</h5>
                     <div class="btn-group" role="group">
-                        <a th:href="@{/}" class="btn btn-primary" th:text="#{nav.books}">Books</a>
-                        <a th:href="@{/genres}" class="btn btn-outline-secondary" th:text="#{nav.genres}">Genres</a>
+                        <a href="/" class="btn btn-primary">Books</a>
+                        <a href="/genres" class="btn btn-outline-secondary">Genres</a>
                     </div>
                 </div>
             </div>
@@ -56,5 +48,111 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Authors JavaScript module for AJAX operations
+        class AuthorsAPI {
+            constructor() {
+                this.baseUrl = '/api/authors';
+            }
+
+            async getAllAuthors() {
+                try {
+                    const response = await fetch(this.baseUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    return await response.json();
+                } catch (error) {
+                    console.error('Error fetching authors:', error);
+                    throw error;
+                }
+            }
+        }
+
+        // UI Helper functions
+        class AuthorsUI {
+            constructor() {
+                this.api = new AuthorsAPI();
+            }
+
+            async loadAuthorsList() {
+                try {
+                    const authors = await this.api.getAllAuthors();
+                    this.renderAuthorsList(authors);
+                } catch (error) {
+                    this.showError('Failed to load authors: ' + error.message);
+                }
+            }
+
+            renderAuthorsList(authors) {
+                const container = document.getElementById('authors-container');
+                if (!container) return;
+
+                if (authors.length === 0) {
+                    container.innerHTML = '<div class="alert alert-info">No authors found.</div>';
+                    return;
+                }
+
+                const authorsHtml = authors.map(author => `
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">${this.escapeHtml(author.fullName)}</h5>
+                                <p class="card-text">
+                                    <small class="text-muted">ID:</small>
+                                    <small class="text-muted">${this.escapeHtml(author.id)}</small>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                container.innerHTML = `<div class="row">${authorsHtml}</div>`;
+            }
+
+            showError(message) {
+                this.showAlert(message, 'danger');
+            }
+
+            showAlert(message, type) {
+                const alertContainer = document.getElementById('alert-container') || document.body;
+                const alert = document.createElement('div');
+                alert.className = `alert alert-${type} alert-dismissible fade show`;
+                alert.innerHTML = `
+                    ${this.escapeHtml(message)}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                alertContainer.insertBefore(alert, alertContainer.firstChild);
+                
+                // Auto-dismiss after 5 seconds
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
+                }, 5000);
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
+        // Global instance
+        const authorsUI = new AuthorsUI();
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            authorsUI.loadAuthorsList();
+        });
+    </script>
 </body>
 </html>
