@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import ru.otus.hw.validation.NotBlankElements;
 
 import java.util.Set;
 
@@ -21,5 +22,6 @@ public class BookUpdateDto {
     @NotBlank(message = "Author is required")
     private String authorId;
     
+    @NotBlankElements(message = "Genre IDs cannot be blank")
     private Set<String> genreIds;
 }
