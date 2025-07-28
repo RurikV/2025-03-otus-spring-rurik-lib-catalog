@@ -1,0 +1,29 @@
+spring:
+  data:
+    mongodb:
+      # Use a different database name for tests to avoid conflicts
+      database: test
+  mongodb:
+    embedded:
+      # Specify the version of embedded MongoDB to use
+      version: 4.0.2
+de:
+  flapdoodle:
+    mongodb:
+      embedded:
+        # Specify the version of embedded MongoDB to use
+        version: 4.0.2
+        features:
+          # Disable sync delay for faster tests
+          sync_delay: 0
+          # Disable authentication for embedded MongoDB in CI environment
+          # In CI, we use embedded MongoDB without authentication for simplicity
+          no_auth: true
+        network:
+          # Use random port to avoid conflicts
+          port: 0
+          bind-ip: localhost
+        # Increase timeouts for more reliable tests
+        timeout:
+          startup: 60000
+          connection: 30000
