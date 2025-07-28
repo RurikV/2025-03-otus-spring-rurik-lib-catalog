@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.dto.BookCreateDto;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.BookUpdateDto;
+import ru.otus.hw.dto.GenreDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.repositories.AuthorRepository;
@@ -99,7 +101,11 @@ public class BookServiceImpl implements BookService {
     }
 
     private BookDto toBookDto(Book book) {
-        return new BookDto(book.getId(), book.getTitle(), book.getAuthor(), book.getGenres());
+        AuthorDto authorDto = new AuthorDto(book.getAuthor().getId(), book.getAuthor().getFullName());
+        var genreDtos = book.getGenres().stream()
+                .map(genre -> new GenreDto(genre.getId(), genre.getName()))
+                .toList();
+        return new BookDto(book.getId(), book.getTitle(), authorDto, genreDtos);
     }
 
     @Override

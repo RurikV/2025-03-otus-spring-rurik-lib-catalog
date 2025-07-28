@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.otus.hw.dto.CommentCreateDto;
+import ru.otus.hw.dto.CommentDto;
 import ru.otus.hw.dto.CommentUpdateDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.models.Comment;
@@ -22,26 +23,26 @@ public class CommentServiceImpl implements CommentService {
     private final BookRepository bookRepository;
 
     @Override
-    public Mono<Comment> findById(String id) {
+    public Mono<CommentDto> findById(String id) {
         if (!hasText(id)) {
             return Mono.error(new IllegalArgumentException("Comment id must not be null or empty"));
         }
         return commentRepository.findById(id)
                 .switchIfEmpty(Mono.error(new EntityNotFoundException("Comment with id %s not found".formatted(id))))
-                .flatMap(this::populateBookField);
+                .map(this::toCommentDto);
     }
 
     @Override
-    public Flux<Comment> findByBookId(String bookId) {
+    public Flux<CommentDto> findByBookId(String bookId) {
         if (!hasText(bookId)) {
             return Flux.error(new IllegalArgumentException("Book id must not be null or empty"));
         }
         return commentRepository.findByBookId(bookId)
-                .flatMap(this::populateBookField);
+                .map(this::toCommentDto);
     }
 
     @Override
-    public Mono<Comment> create(CommentCreateDto commentCreateDto) {
+    public Mono<CommentDto> create(CommentCreateDto commentCreateDto) {
         if (!hasText(commentCreateDto.getText())) {
             return Mono.error(new IllegalArgumentException("Comment text must not be null or empty"));
         }
@@ -49,11 +50,12 @@ public class CommentServiceImpl implements CommentService {
             return Mono.error(new IllegalArgumentException("Book id must not be null or empty"));
         }
         
-        return save(null, commentCreateDto.getText(), commentCreateDto.getBookId());
+        return save(null, commentCreateDto.getText(), commentCreateDto.getBookId())
+                .map(this::toCommentDto);
     }
 
     @Override
-    public Mono<Comment> update(CommentUpdateDto commentUpdateDto) {
+    public Mono<CommentDto> update(CommentUpdateDto commentUpdateDto) {
         if (!hasText(commentUpdateDto.getId())) {
             return Mono.error(new IllegalArgumentException("Comment id must not be null or empty"));
         }
@@ -64,7 +66,8 @@ public class CommentServiceImpl implements CommentService {
         return commentRepository.findById(commentUpdateDto.getId())
                 .switchIfEmpty(Mono.error(new EntityNotFoundException(
                         "Comment with id %s not found".formatted(commentUpdateDto.getId()))))
-                .flatMap(comment -> save(commentUpdateDto.getId(), commentUpdateDto.getText(), comment.getBookId()));
+                .flatMap(comment -> save(commentUpdateDto.getId(), commentUpdateDto.getText(), comment.getBookId()))
+                .map(this::toCommentDto);
     }
 
     @Override
@@ -80,17 +83,11 @@ public class CommentServiceImpl implements CommentService {
                 .switchIfEmpty(Mono.error(new EntityNotFoundException("Book with id %s not found".formatted(bookId))))
                 .flatMap(book -> {
                     var comment = new Comment(id, text, book.getId());
-                    comment.setBook(book); // Set the book field immediately
                     return commentRepository.save(comment);
                 });
     }
 
-    private Mono<Comment> populateBookField(Comment comment) {
-        return bookRepository.findById(comment.getBookId())
-                .map(book -> {
-                    comment.setBook(book);
-                    return comment;
-                })
-                .switchIfEmpty(Mono.just(comment)); // Return comment even if book not found
+    private CommentDto toCommentDto(Comment comment) {
+        return new CommentDto(comment.getId(), comment.getText(), comment.getBookId());
     }
 }

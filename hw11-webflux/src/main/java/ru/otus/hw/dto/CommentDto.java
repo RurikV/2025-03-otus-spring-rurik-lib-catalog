@@ -4,17 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class BookDto {
+public class CommentDto {
     private String id;
     
-    private String title;
+    private String text;
     
-    private AuthorDto author;
-    
-    private List<GenreDto> genres;
+    private String bookId;
 }

@@ -1,8 +1,8 @@
 package ru.otus.hw.services;
 
 import reactor.core.publisher.Flux;
-import ru.otus.hw.models.Author;
+import ru.otus.hw.dto.AuthorDto;
 
 public interface AuthorService {
-    Flux<Author> findAll();
+    Flux<AuthorDto> findAll();
 }
