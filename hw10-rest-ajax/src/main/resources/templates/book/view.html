@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,11 +9,11 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" th:href="@{/}" th:text="#{app.title}">Library Catalog</a>
+            <a class="navbar-brand" href="/">Library Catalog</a>
             <div class="navbar-nav">
-                <a class="nav-link" th:href="@{/}" th:text="#{nav.books}">Books</a>
-                <a class="nav-link" th:href="@{/authors}" th:text="#{nav.authors}">Authors</a>
-                <a class="nav-link" th:href="@{/genres}" th:text="#{nav.genres}">Genres</a>
+                <a class="nav-link" href="/">Books</a>
+                <a class="nav-link" href="/authors">Authors</a>
+                <a class="nav-link" href="/genres">Genres</a>
             </div>
         </div>
     </nav>
@@ -23,7 +23,7 @@
             <div class="col-md-8">
                 <div id="alert-container"></div>
                 
-                <div id="book-details" th:data-book-id="${bookId}">
+                <div id="book-details">
                     <div class="d-flex justify-content-center">
                         <div class="spinner-border" role="status">
                             <span class="visually-hidden">Loading...</span>
@@ -33,24 +33,14 @@
 
                 <div class="mt-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h3 th:text="#{comments.title}">Comments</h3>
-                        <a th:href="@{/books/{id}/comments/new(id=${book.id})}" class="btn btn-primary btn-sm" th:text="#{comments.add}">Add Comment</a>
+                        <h3>Comments</h3>
+                        <a href="#" id="add-comment-btn" class="btn btn-primary btn-sm">Add Comment</a>
                     </div>
 
-                    <div th:if="${#lists.isEmpty(comments)}" class="alert alert-info" th:text="#{comments.empty}">
-                        No comments yet.
-                    </div>
-
-                    <div th:unless="${#lists.isEmpty(comments)}">
-                        <div th:each="comment : ${comments}" class="card mb-3">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <p class="card-text" th:text="${comment.text}">Comment text</p>
-                                    <div class="btn-group btn-group-sm">
-                                        <a th:href="@{/comments/{id}/edit(id=${comment.id})}" class="btn btn-outline-secondary btn-sm" th:text="#{action.edit}">Edit</a>
-                                        <a th:href="@{/comments/{id}/delete(id=${comment.id})}" class="btn btn-outline-danger btn-sm" th:text="#{action.delete}">Delete</a>
-                                    </div>
-                                </div>
+                    <div id="comments-container">
+                        <div class="d-flex justify-content-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading comments...</span>
                             </div>
                         </div>
                     </div>
@@ -60,13 +50,13 @@
             <div class="col-md-4">
                 <div class="card">
                     <div class="card-header">
-                        <h5 th:text="#{actions.title}">Actions</h5>
+                        <h5>Actions</h5>
                     </div>
                     <div class="card-body">
                         <div class="d-grid gap-2">
-                            <a th:href="@{/}" class="btn btn-outline-primary" th:text="#{action.back.books}">Back to Books</a>
-                            <a th:href="@{/books/{id}/edit(id=${book.id})}" class="btn btn-outline-secondary" th:text="#{action.edit.book}">Edit Book</a>
-                            <a th:href="@{/books/{id}/comments/new(id=${book.id})}" class="btn btn-outline-success" th:text="#{action.add.comment}">Add Comment</a>
+                            <a href="/" class="btn btn-outline-primary">Back to Books</a>
+                            <a href="#" id="edit-book-btn" class="btn btn-outline-secondary">Edit Book</a>
+                            <a href="#" id="add-comment-btn-sidebar" class="btn btn-outline-success">Add Comment</a>
                         </div>
                     </div>
                 </div>
@@ -76,5 +66,40 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/books.js"></script>
+    <script src="/js/comments.js"></script>
+    <script>
+        // Initialize book view page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Extract book ID from URL
+            const urlPath = window.location.pathname;
+            const bookMatch = urlPath.match(/\/books\/([^\/]+)$/);
+            
+            if (bookMatch) {
+                const bookId = bookMatch[1];
+                
+                // Load book details
+                booksUI.loadBookDetails(bookId);
+                
+                // Load comments for this book
+                commentsUI.loadCommentsByBookId(bookId);
+                
+                // Set up action buttons
+                const addCommentBtn = document.getElementById('add-comment-btn');
+                if (addCommentBtn) {
+                    addCommentBtn.href = `/books/${bookId}/comments/new`;
+                }
+                
+                const addCommentBtnSidebar = document.getElementById('add-comment-btn-sidebar');
+                if (addCommentBtnSidebar) {
+                    addCommentBtnSidebar.href = `/books/${bookId}/comments/new`;
+                }
+                
+                const editBookBtn = document.getElementById('edit-book-btn');
+                if (editBookBtn) {
+                    editBookBtn.href = `/books/${bookId}/edit`;
+                }
+            }
+        });
+    </script>
 </body>
 </html>
