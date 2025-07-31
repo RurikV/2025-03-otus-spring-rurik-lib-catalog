@@ -41,10 +41,6 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Mono<BookDto> create(BookCreateDto bookCreateDto) {
-        if (isEmpty(bookCreateDto.getGenreIds())) {
-            return Mono.error(new IllegalArgumentException("Genres ids must not be null"));
-        }
-
         return authorRepository.findById(bookCreateDto.getAuthorId())
                 .switchIfEmpty(Mono.error(new EntityNotFoundException(
                         "Author with id %s not found".formatted(bookCreateDto.getAuthorId()))))
@@ -66,10 +62,6 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Mono<BookDto> update(BookUpdateDto bookUpdateDto) {
-        if (isEmpty(bookUpdateDto.getGenreIds())) {
-            return Mono.error(new IllegalArgumentException("Genres ids must not be null"));
-        }
-
         return bookRepository.findById(bookUpdateDto.getId())
                 .switchIfEmpty(Mono.error(new EntityNotFoundException(
                         "Book with id %s not found".formatted(bookUpdateDto.getId()))))
