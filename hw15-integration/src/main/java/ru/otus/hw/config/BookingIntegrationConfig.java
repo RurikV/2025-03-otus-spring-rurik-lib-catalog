@@ -43,7 +43,8 @@ public class BookingIntegrationConfig {
     @Bean
     public IntegrationFlow bookingCreationFlow(BookingService bookingService, PaymentService paymentService) {
         return IntegrationFlow.from("bookingCreationChannel")
-                .filter(Booking.class, booking -> booking.getClientId() != null && booking.getTenantId() != null)
+                .filter(Booking.class, booking -> booking.getClientId() != null && booking.getTenantId() != null,
+                        spec -> spec.discardChannel("discardedBookingChannel"))
                 .transform(Booking.class, bookingService::createBooking)
                 .filter(Booking.class, booking -> booking.getStatus() == Booking.BookingStatus.PENDING_PAYMENT)
                 .channel("paymentInitiationChannel")
@@ -56,6 +57,23 @@ public class BookingIntegrationConfig {
                     System.out.println("Payment initiated for booking: " + booking.getId() + 
                                      ", payment ID: " + booking.getPaymentId());
                     return booking;
+                })
+                .get();
+    }
+
+    // Channel for discarded bookings
+    @Bean
+    public MessageChannel discardedBookingChannel() {
+        return MessageChannels.direct().getObject();
+    }
+
+    // Flow to handle discarded bookings and return null
+    @Bean
+    public IntegrationFlow discardedBookingFlow() {
+        return IntegrationFlow.from("discardedBookingChannel")
+                .handle(Booking.class, (booking, headers) -> {
+                    System.out.println("Booking discarded due to missing required fields");
+                    return null;
                 })
                 .get();
     }

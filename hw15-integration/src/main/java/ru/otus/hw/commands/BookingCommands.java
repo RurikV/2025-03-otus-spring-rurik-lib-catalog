@@ -22,10 +22,10 @@ public class BookingCommands {
     }
 
     @ShellMethod(value = "Create a booking through integration flow", key = {"create-booking", "cb"})
-    public String createBooking(@ShellOption Long clientId, 
-                               @ShellOption Long tenantId,
-                               @ShellOption Long scheduleId,
-                               @ShellOption Long deedId) {
+    public String createBooking(@ShellOption("--client-id") Long clientId, 
+                               @ShellOption("--tenant-id") Long tenantId,
+                               @ShellOption("--schedule-id") Long scheduleId,
+                               @ShellOption("--deed-id") Long deedId) {
         try {
             // Create booking
             Booking booking = new Booking();
@@ -46,10 +46,10 @@ public class BookingCommands {
     }
 
     @ShellMethod(value = "Create a booking asynchronously", key = {"create-booking-async", "cba"})
-    public String createBookingAsync(@ShellOption Long clientId, 
-                                    @ShellOption Long tenantId,
-                                    @ShellOption Long scheduleId,
-                                    @ShellOption Long deedId) {
+    public String createBookingAsync(@ShellOption("--client-id") Long clientId, 
+                                    @ShellOption("--tenant-id") Long tenantId,
+                                    @ShellOption("--schedule-id") Long scheduleId,
+                                    @ShellOption("--deed-id") Long deedId) {
         try {
             // Create booking
             Booking booking = new Booking();
@@ -68,9 +68,9 @@ public class BookingCommands {
     }
 
     @ShellMethod(value = "Simulate payment confirmation webhook", key = {"confirm-payment", "cp"})
-    public String confirmPayment(@ShellOption Long bookingId, 
-                                @ShellOption String transactionId,
-                                @ShellOption(defaultValue = "100.00") String amount) {
+    public String confirmPayment(@ShellOption("--booking-id") Long bookingId, 
+                                @ShellOption("--transaction-id") String transactionId,
+                                @ShellOption(value = "--amount", defaultValue = "100.00") String amount) {
         try {
             // Create payment confirmation
             Payment payment = new Payment();
@@ -90,8 +90,8 @@ public class BookingCommands {
     }
 
     @ShellMethod(value = "Process payout for booking", key = {"process-payout", "pp"})
-    public String processPayout(@ShellOption Long bookingId, 
-                               @ShellOption Long tenantId) {
+    public String processPayout(@ShellOption("--booking-id") Long bookingId, 
+                               @ShellOption("--tenant-id") Long tenantId) {
         try {
             // Create booking for payout
             Booking booking = new Booking();
