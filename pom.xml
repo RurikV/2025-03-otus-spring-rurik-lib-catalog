@@ -18,5 +18,6 @@
         <module>hw09-mvc</module>
         <module>hw10-rest-ajax</module>
         <module>hw14-batch</module>
+        <module>hw15-integration</module>
     </modules>
 </project>
