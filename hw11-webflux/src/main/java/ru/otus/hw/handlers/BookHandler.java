@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.Validator;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
@@ -16,6 +18,8 @@ import ru.otus.hw.services.BookService;
 public class BookHandler {
 
     private final BookService bookService;
+    
+    private final Validator validator;
 
     public Mono<ServerResponse> getAllBooks(ServerRequest request) {
         return ServerResponse.ok()
@@ -50,6 +54,7 @@ public class BookHandler {
         String id = request.pathVariable("id");
         return request.bodyToMono(BookUpdateDto.class)
                 .doOnNext(dto -> dto.setId(id))
+                .flatMap(this::validateBookUpdateDto)
                 .flatMap(bookService::update)
                 .flatMap(updatedBook -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
@@ -58,6 +63,21 @@ public class BookHandler {
                         e -> ServerResponse.badRequest().bodyValue(e.getMessage()))
                 .onErrorResume(Exception.class, 
                         e -> ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+    }
+    
+    private Mono<BookUpdateDto> validateBookUpdateDto(BookUpdateDto dto) {
+        var errors = new BeanPropertyBindingResult(dto, "bookUpdateDto");
+        validator.validate(dto, errors);
+        
+        if (errors.hasErrors()) {
+            var errorMessage = errors.getAllErrors().stream()
+                    .map(error -> error.getDefaultMessage())
+                    .reduce((msg1, msg2) -> msg1 + "; " + msg2)
+                    .orElse("Validation failed");
+            return Mono.error(new IllegalArgumentException(errorMessage));
+        }
+        
+        return Mono.just(dto);
     }
 
     public Mono<ServerResponse> deleteBook(ServerRequest request) {
