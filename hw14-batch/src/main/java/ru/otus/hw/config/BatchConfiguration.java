@@ -5,16 +5,18 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.item.database.JpaPagingItemReader;
+import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
+import jakarta.persistence.EntityManagerFactory;
 import ru.otus.hw.batch.processors.JpaToMongoAuthorProcessor;
 import ru.otus.hw.batch.processors.JpaToMongoBookProcessor;
 import ru.otus.hw.batch.processors.JpaToMongoCommentProcessor;
 import ru.otus.hw.batch.processors.JpaToMongoGenreProcessor;
 import ru.otus.hw.batch.readers.JpaAuthorItemReader;
-import ru.otus.hw.batch.readers.JpaBookItemReader;
 import ru.otus.hw.batch.readers.JpaCommentItemReader;
 import ru.otus.hw.batch.readers.JpaGenreItemReader;
 import ru.otus.hw.batch.writers.MongoAuthorItemWriter;
@@ -40,7 +42,7 @@ public class BatchConfiguration {
     private PlatformTransactionManager transactionManager;
 
     @Autowired
-    private JpaBookItemReader jpaBookItemReader;
+    private EntityManagerFactory entityManagerFactory;
 
     @Autowired
     private JpaToMongoBookProcessor jpaToMongoBookProcessor;
@@ -76,10 +78,20 @@ public class BatchConfiguration {
     private MongoAuthorItemWriter mongoAuthorItemWriter;
 
     @Bean
+    public JpaPagingItemReader<Book> jpaPagingBookItemReader() {
+        return new JpaPagingItemReaderBuilder<Book>()
+                .name("jpaPagingBookItemReader")
+                .entityManagerFactory(entityManagerFactory)
+                .queryString("SELECT b FROM Book b LEFT JOIN FETCH b.author LEFT JOIN FETCH b.genres")
+                .pageSize(10)
+                .build();
+    }
+
+    @Bean
     public Step bookMigrationStep() {
         return new StepBuilder("bookMigrationStep", jobRepository)
                 .<Book, MongoBook>chunk(10, transactionManager)
-                .reader(jpaBookItemReader)
+                .reader(jpaPagingBookItemReader())
                 .processor(jpaToMongoBookProcessor)
                 .writer(mongoBookItemWriter)
                 .build();
