@@ -51,7 +51,8 @@ public class CommentHandler {
                                     bookService.findById(bookId)
                                             .flatMap(book -> ServerResponse.ok()
                                                     .contentType(MediaType.TEXT_HTML)
-                                                    .render("comment/form", Map.of("book", book, "error", error.getMessage())))
+                                                    .render("comment/form", 
+                                                            Map.of("book", book, "error", error.getMessage())))
                                             .switchIfEmpty(ServerResponse.seeOther(URI.create("/")).build()));
                 });
     }
