@@ -107,8 +107,13 @@ class CommentHandlerTest {
     }
 
     @Test
-    @DisplayName("redirect to home on comment creation error")
-    void shouldRedirectToHomeOnCommentCreationError() {
+    @DisplayName("show error on comment form when comment creation fails")
+    void shouldShowErrorOnCommentFormWhenCommentCreationFails() {
+        var authorDto = new AuthorDto("1", "Author Name");
+        var genreDto = new GenreDto("1", "Genre Name");
+        var bookDto = new BookDto("1", "Book Title", authorDto, List.of(genreDto));
+        
+        given(bookService.findById("1")).willReturn(Mono.just(bookDto));
         given(commentService.create(any())).willReturn(Mono.error(new RuntimeException("Error")));
 
         webTestClient.post()
@@ -116,8 +121,8 @@ class CommentHandlerTest {
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .bodyValue("text=Great book!")
                 .exchange()
-                .expectStatus().isSeeOther()
-                .expectHeader().location("/");
+                .expectStatus().isOk()
+                .expectHeader().contentType("text/html;charset=UTF-8");
     }
 
     @Test

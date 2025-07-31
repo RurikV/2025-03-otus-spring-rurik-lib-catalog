@@ -26,6 +26,10 @@
                         <h2 th:text="#{comment.new.title}">Add Comment</h2>
                     </div>
                     <div class="card-body">
+                        <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}">
+                            Error message
+                        </div>
+                        
                         <div class="alert alert-info mb-4">
                             <h5 th:text="#{comment.for.book}">Adding comment for book:</h5>
                             <strong th:text="${book.title}">Book Title</strong>

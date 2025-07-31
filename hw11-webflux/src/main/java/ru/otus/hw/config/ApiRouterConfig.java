@@ -8,6 +8,7 @@ import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import ru.otus.hw.handlers.AuthorHandler;
 import ru.otus.hw.handlers.BookHandler;
+import ru.otus.hw.handlers.CommentHandler;
 import ru.otus.hw.handlers.GenreHandler;
 
 import static org.springframework.web.reactive.function.server.RequestPredicates.DELETE;
@@ -22,7 +23,8 @@ public class ApiRouterConfig {
     @Bean
     public RouterFunction<ServerResponse> apiRoutes(BookHandler bookHandler, 
                                                    AuthorHandler authorHandler, 
-                                                   GenreHandler genreHandler) {
+                                                   GenreHandler genreHandler,
+                                                   CommentHandler commentHandler) {
         return RouterFunctions
                 .route(GET("/api/books").and(accept(MediaType.APPLICATION_JSON)), 
                         bookHandler::getAllBooks)
@@ -37,6 +39,8 @@ public class ApiRouterConfig {
                 .andRoute(GET("/api/authors").and(accept(MediaType.APPLICATION_JSON)), 
                         authorHandler::getAllAuthors)
                 .andRoute(GET("/api/genres").and(accept(MediaType.APPLICATION_JSON)), 
-                        genreHandler::getAllGenres);
+                        genreHandler::getAllGenres)
+                .andRoute(GET("/api/books/{bookId}/comments").and(accept(MediaType.APPLICATION_JSON)), 
+                        commentHandler::getCommentsByBookId);
     }
 }
