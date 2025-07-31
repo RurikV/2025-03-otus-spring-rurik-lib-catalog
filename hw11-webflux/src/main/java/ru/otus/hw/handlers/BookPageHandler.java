@@ -30,9 +30,12 @@ public class BookPageHandler {
     }
 
     public Mono<ServerResponse> viewBook(ServerRequest request) {
-        return ServerResponse.ok()
-                .contentType(MediaType.TEXT_HTML)
-                .render("book/view")
+        String id = request.pathVariable("id");
+        return bookService.findById(id)
+                .flatMap(book -> ServerResponse.ok()
+                        .contentType(MediaType.TEXT_HTML)
+                        .render("book/view"))
+                .switchIfEmpty(ServerResponse.notFound().build())
                 .onErrorResume(handlePageErrors("/"));
     }
 

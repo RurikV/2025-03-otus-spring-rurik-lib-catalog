@@ -25,7 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 @WebFluxTest
-@Import({ApiRouterConfig.class, BookHandler.class})
+@Import({ApiRouterConfig.class, BookHandler.class, AuthorHandler.class, GenreHandler.class})
 @DisplayName("BookHandler should")
 class BookHandlerTest {
 
@@ -34,6 +34,15 @@ class BookHandlerTest {
 
     @MockBean
     private BookService bookService;
+
+    @MockBean
+    private ru.otus.hw.services.AuthorService authorService;
+
+    @MockBean
+    private ru.otus.hw.services.GenreService genreService;
+
+    @MockBean
+    private org.springframework.validation.Validator validator;
 
     @Test
     @DisplayName("return all books")
