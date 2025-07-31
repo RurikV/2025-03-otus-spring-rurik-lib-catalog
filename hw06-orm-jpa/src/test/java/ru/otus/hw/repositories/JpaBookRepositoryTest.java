@@ -70,14 +70,20 @@ class JpaBookRepositoryTest {
     @DisplayName("должен сохранять новую книгу")
     @Test
     void shouldSaveNewBook() {
+        // Arrange
         var expectedBook = new Book(0, "BookTitle_10500", dbAuthors.get(0),
                 List.of(dbGenres.get(0), dbGenres.get(2)), new ArrayList<>());
+
+        // Act
         var returnedBook = repository.save(expectedBook);
+        var foundBook = repository.findById(returnedBook.getId());
+
+        // Assert
         assertThat(returnedBook).isNotNull()
                 .matches(book -> book.getId() > 0)
                 .usingRecursiveComparison().ignoringExpectedNullFields().isEqualTo(expectedBook);
 
-        assertThat(repository.findById(returnedBook.getId()))
+        assertThat(foundBook)
                 .isPresent()
                 .get()
                 .usingRecursiveComparison()
@@ -88,20 +94,26 @@ class JpaBookRepositoryTest {
     @DisplayName("должен сохранять измененную книгу")
     @Test
     void shouldSaveUpdatedBook() {
+        // Arrange
         var expectedBook = new Book(1L, "BookTitle_10500", dbAuthors.get(2),
                 List.of(dbGenres.get(4), dbGenres.get(5)), new ArrayList<>());
 
-        assertThat(repository.findById(expectedBook.getId()))
+        // Act
+        var originalBook = repository.findById(expectedBook.getId());
+        var returnedBook = repository.save(expectedBook);
+        var foundBook = repository.findById(returnedBook.getId());
+
+        // Assert
+        assertThat(originalBook)
                 .isPresent()
                 .get()
                 .isNotEqualTo(expectedBook);
 
-        var returnedBook = repository.save(expectedBook);
         assertThat(returnedBook).isNotNull()
                 .matches(book -> book.getId() > 0)
                 .usingRecursiveComparison().ignoringExpectedNullFields().isEqualTo(expectedBook);
 
-        assertThat(repository.findById(returnedBook.getId()))
+        assertThat(foundBook)
                 .isPresent()
                 .get()
                 .usingRecursiveComparison()
@@ -112,10 +124,18 @@ class JpaBookRepositoryTest {
     @DisplayName("должен удалять книгу по id ")
     @Test
     void shouldDeleteBook() {
-        assertThat(repository.findById(1L)).isPresent();
-        repository.deleteById(1L);
+        // Arrange
+        long bookId = 1L;
+
+        // Act
+        var bookBeforeDelete = repository.findById(bookId);
+        repository.deleteById(bookId);
         em.flush();
-        assertThat(repository.findById(1L)).isEmpty();
+        var bookAfterDelete = repository.findById(bookId);
+
+        // Assert
+        assertThat(bookBeforeDelete).isPresent();
+        assertThat(bookAfterDelete).isEmpty();
     }
 
     private static List<Author> getDbAuthors() {

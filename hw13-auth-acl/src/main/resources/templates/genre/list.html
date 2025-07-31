@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{genres.list.title}">Genres</title>
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}" th:text="#{app.title}">Library Catalog</a>
+            <div class="navbar-nav me-auto">
+                <a class="nav-link" th:href="@{/}" th:text="#{nav.books}">Books</a>
+                <a class="nav-link" th:href="@{/authors}" th:text="#{nav.authors}">Authors</a>
+                <a class="nav-link active" th:href="@{/genres}" th:text="#{nav.genres}">Genres</a>
+            </div>
+            <div class="navbar-nav">
+                <span class="navbar-text me-3" sec:authorize="isAuthenticated()">
+                    Welcome, <span sec:authentication="name">User</span>!
+                </span>
+                <form class="d-inline" th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()">
+                    <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 th:text="#{genres.list.title}">Genres</h1>
+            <a th:href="@{/}" class="btn btn-outline-primary" th:text="#{action.back.books}">Back to Books</a>
+        </div>
+
+        <div th:if="${#lists.isEmpty(genres)}" class="alert alert-info" th:text="#{genres.list.empty}">
+            No genres found.
+        </div>
+
+        <div th:unless="${#lists.isEmpty(genres)}" class="row">
+            <div th:each="genre : ${genres}" class="col-md-6 col-lg-4 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${genre.name}">Genre Name</h5>
+                        <p class="card-text">
+                            <small class="text-muted" th:text="#{genre.id}">ID:</small>
+                            <small class="text-muted" th:text="${genre.id}">Genre ID</small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title" th:text="#{navigation.title}">Navigation</h5>
+                    <div class="btn-group" role="group">
+                        <a th:href="@{/}" class="btn btn-primary" th:text="#{nav.books}">Books</a>
+                        <a th:href="@{/authors}" class="btn btn-outline-secondary" th:text="#{nav.authors}">Authors</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

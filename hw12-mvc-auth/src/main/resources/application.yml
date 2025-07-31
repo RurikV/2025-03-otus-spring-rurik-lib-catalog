@@ -1,0 +1,13 @@
+spring:
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: library
+      username: root
+      password: example
+      authentication-database: admin
+  messages:
+    basename: messages
+    encoding: UTF-8
+    cache-duration: 3600
