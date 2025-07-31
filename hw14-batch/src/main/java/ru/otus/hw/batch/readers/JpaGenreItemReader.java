@@ -1,7 +1,6 @@
 package ru.otus.hw.batch.readers;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.NonTransientResourceException;
 import org.springframework.batch.item.ParseException;
@@ -16,11 +15,10 @@ import ru.otus.hw.repositories.GenreRepository;
 import java.util.Iterator;
 import java.util.List;
 
+@Slf4j
 @Component
 @Scope(value = "step", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class JpaGenreItemReader implements ItemReader<Genre> {
-    
-    private static final Logger LOGGER = LoggerFactory.getLogger(JpaGenreItemReader.class);
     
     private final GenreRepository genreRepository;
 
@@ -56,6 +54,6 @@ public class JpaGenreItemReader implements ItemReader<Genre> {
         List<Genre> genres = genreRepository.findAll();
         genreIterator = genres.iterator();
         initialized = true;
-        LOGGER.debug("JpaGenreItemReader initialized with {} genres", genres.size());
+        log.debug("JpaGenreItemReader initialized with {} genres", genres.size());
     }
 }

@@ -1,7 +1,6 @@
 package ru.otus.hw.batch.readers;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.NonTransientResourceException;
 import org.springframework.batch.item.ParseException;
@@ -16,11 +15,10 @@ import ru.otus.hw.repositories.CommentRepository;
 import java.util.Iterator;
 import java.util.List;
 
+@Slf4j
 @Component
 @Scope(value = "step", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class JpaCommentItemReader implements ItemReader<Comment> {
-    
-    private static final Logger LOGGER = LoggerFactory.getLogger(JpaCommentItemReader.class);
     
     private final CommentRepository commentRepository;
 
@@ -56,6 +54,6 @@ public class JpaCommentItemReader implements ItemReader<Comment> {
         List<Comment> comments = commentRepository.findAll();
         commentIterator = comments.iterator();
         initialized = true;
-        LOGGER.debug("JpaCommentItemReader initialized with {} comments", comments.size());
+        log.debug("JpaCommentItemReader initialized with {} comments", comments.size());
     }
 }

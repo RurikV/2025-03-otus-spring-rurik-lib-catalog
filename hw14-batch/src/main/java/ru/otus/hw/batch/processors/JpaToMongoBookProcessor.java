@@ -1,7 +1,6 @@
 package ru.otus.hw.batch.processors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -14,10 +13,9 @@ import ru.otus.hw.models.mongo.MongoGenre;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class JpaToMongoBookProcessor implements ItemProcessor<Book, MongoBook> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(JpaToMongoBookProcessor.class);
 
     @Override
     public MongoBook process(@NonNull Book jpaBook) {
@@ -29,7 +27,7 @@ public class JpaToMongoBookProcessor implements ItemProcessor<Book, MongoBook> {
         
         MongoBook mongoBook = new MongoBook(mongoId, jpaBook.getTitle(), mongoAuthor, mongoGenres);
         
-        LOGGER.debug("Transformed JPA Book ID: {} -> MongoDB Book ID: {}", 
+        log.debug("Transformed JPA Book ID: {} -> MongoDB Book ID: {}", 
                     jpaBook.getId(), mongoBook.getId());
         
         return mongoBook;

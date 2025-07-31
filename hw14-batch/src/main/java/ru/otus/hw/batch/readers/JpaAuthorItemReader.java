@@ -1,7 +1,6 @@
 package ru.otus.hw.batch.readers;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.NonTransientResourceException;
 import org.springframework.batch.item.ParseException;
@@ -16,11 +15,10 @@ import ru.otus.hw.repositories.AuthorRepository;
 import java.util.Iterator;
 import java.util.List;
 
+@Slf4j
 @Component
 @Scope(value = "step", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class JpaAuthorItemReader implements ItemReader<Author> {
-    
-    private static final Logger LOGGER = LoggerFactory.getLogger(JpaAuthorItemReader.class);
     
     private final AuthorRepository authorRepository;
 
@@ -56,6 +54,6 @@ public class JpaAuthorItemReader implements ItemReader<Author> {
         List<Author> authors = authorRepository.findAll();
         authorIterator = authors.iterator();
         initialized = true;
-        LOGGER.debug("JpaAuthorItemReader initialized with {} authors", authors.size());
+        log.debug("JpaAuthorItemReader initialized with {} authors", authors.size());
     }
 }

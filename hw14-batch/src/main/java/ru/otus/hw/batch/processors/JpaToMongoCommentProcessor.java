@@ -1,7 +1,6 @@
 package ru.otus.hw.batch.processors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -9,10 +8,9 @@ import ru.otus.hw.models.jpa.Comment;
 import ru.otus.hw.models.mongo.MongoBook;
 import ru.otus.hw.models.mongo.MongoComment;
 
+@Slf4j
 @Component
 public class JpaToMongoCommentProcessor implements ItemProcessor<Comment, MongoComment> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(JpaToMongoCommentProcessor.class);
 
     @Override
     public MongoComment process(@NonNull Comment jpaComment) {
@@ -33,7 +31,7 @@ public class JpaToMongoCommentProcessor implements ItemProcessor<Comment, MongoC
         
         MongoComment mongoComment = new MongoComment(mongoId, jpaComment.getText(), mongoBook);
         
-        LOGGER.debug("Transformed JPA Comment ID: {} -> MongoDB Comment ID: {}", 
+        log.debug("Transformed JPA Comment ID: {} -> MongoDB Comment ID: {}", 
                     jpaComment.getId(), mongoComment.getId());
         
         return mongoComment;

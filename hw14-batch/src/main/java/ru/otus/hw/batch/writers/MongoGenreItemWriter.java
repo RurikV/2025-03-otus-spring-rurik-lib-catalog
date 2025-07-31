@@ -1,7 +1,6 @@
 package ru.otus.hw.batch.writers;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,10 +10,9 @@ import ru.otus.hw.models.mongo.MongoGenre;
 
 import java.util.List;
 
+@Slf4j
 @Component
 public class MongoGenreItemWriter implements ItemWriter<MongoGenre> {
-    
-    private static final Logger LOGGER = LoggerFactory.getLogger(MongoGenreItemWriter.class);
     
     private final MongoTemplate mongoTemplate;
     
@@ -30,9 +28,9 @@ public class MongoGenreItemWriter implements ItemWriter<MongoGenre> {
         // Simple direct save - no complex logic needed
         for (MongoGenre genre : genres) {
             mongoTemplate.save(genre);
-            LOGGER.debug("Saved MongoDB genre: {} with ID: {}", genre.getName(), genre.getId());
+            log.debug("Saved MongoDB genre: {} with ID: {}", genre.getName(), genre.getId());
         }
         
-        LOGGER.debug("Saved {} genres to MongoDB", genres.size());
+        log.debug("Saved {} genres to MongoDB", genres.size());
     }
 }
