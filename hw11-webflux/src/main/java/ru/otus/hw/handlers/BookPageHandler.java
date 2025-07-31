@@ -20,6 +20,8 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.Map;
 
+import static ru.otus.hw.handlers.ErrorHandlingUtils.handlePageErrors;
+
 @Component
 @RequiredArgsConstructor
 public class BookPageHandler {
@@ -48,7 +50,8 @@ public class BookPageHandler {
                                 "book", tuple.getT1(),
                                 "comments", tuple.getT2()
                         )))
-                .switchIfEmpty(ServerResponse.notFound().build());
+                .switchIfEmpty(ServerResponse.notFound().build())
+                .onErrorResume(handlePageErrors("/"));
     }
 
     public Mono<ServerResponse> newBookForm(ServerRequest request) {
@@ -59,7 +62,8 @@ public class BookPageHandler {
                                 "book", new BookDto(),
                                 "authors", tuple.getT1(),
                                 "genres", tuple.getT2()
-                        )));
+                        )))
+                .onErrorResume(handlePageErrors("/"));
     }
 
     public Mono<ServerResponse> editBookForm(ServerRequest request) {
@@ -76,7 +80,8 @@ public class BookPageHandler {
                         "authors", tuple.getT2(),
                         "genres", tuple.getT3()
                 )))
-                .switchIfEmpty(ServerResponse.notFound().build());
+                .switchIfEmpty(ServerResponse.notFound().build())
+                .onErrorResume(handlePageErrors("/"));
     }
 
     public Mono<ServerResponse> deleteBookConfirm(ServerRequest request) {

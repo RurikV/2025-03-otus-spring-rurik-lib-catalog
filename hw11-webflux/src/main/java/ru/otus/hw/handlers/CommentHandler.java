@@ -15,6 +15,8 @@ import ru.otus.hw.services.CommentService;
 import java.net.URI;
 import java.util.Map;
 
+import static ru.otus.hw.handlers.ErrorHandlingUtils.handlePageErrors;
+
 @Component
 @RequiredArgsConstructor
 public class CommentHandler {
@@ -30,8 +32,7 @@ public class CommentHandler {
                         .contentType(MediaType.TEXT_HTML)
                         .render("comment/form", Map.of("book", book)))
                 .switchIfEmpty(ServerResponse.seeOther(URI.create("/")).build())
-                .onErrorResume(Exception.class, e -> 
-                        ServerResponse.seeOther(URI.create("/")).build());
+                .onErrorResume(handlePageErrors("/"));
     }
 
     public Mono<ServerResponse> saveComment(ServerRequest request) {
@@ -45,8 +46,7 @@ public class CommentHandler {
                     return commentService.create(createDto)
                             .flatMap(createdComment -> 
                                     ServerResponse.seeOther(URI.create("/books/" + bookId)).build())
-                            .onErrorResume(Exception.class, e -> 
-                                    ServerResponse.seeOther(URI.create("/")).build());
+                            .onErrorResume(handlePageErrors("/"));
                 });
     }
 
@@ -63,8 +63,7 @@ public class CommentHandler {
                                     .render("comment/edit", Map.of("comment", comment)))
                 )
                 .switchIfEmpty(ServerResponse.seeOther(URI.create("/")).build())
-                .onErrorResume(Exception.class, e -> 
-                        ServerResponse.seeOther(URI.create("/")).build());
+                .onErrorResume(handlePageErrors("/"));
     }
 
     public Mono<ServerResponse> updateComment(ServerRequest request) {
@@ -83,8 +82,7 @@ public class CommentHandler {
                                                         URI.create("/books/" + comment.getBookId())).build());
                             })
                             .switchIfEmpty(ServerResponse.seeOther(URI.create("/")).build())
-                            .onErrorResume(Exception.class, e -> 
-                                    ServerResponse.seeOther(URI.create("/")).build());
+                            .onErrorResume(handlePageErrors("/"));
                 });
     }
 
@@ -101,8 +99,7 @@ public class CommentHandler {
                                     .render("comment/delete", Map.of("comment", comment)))
                 )
                 .switchIfEmpty(ServerResponse.seeOther(URI.create("/")).build())
-                .onErrorResume(Exception.class, e -> 
-                        ServerResponse.seeOther(URI.create("/")).build());
+                .onErrorResume(handlePageErrors("/"));
     }
 
     public Mono<ServerResponse> deleteComment(ServerRequest request) {
@@ -114,7 +111,6 @@ public class CommentHandler {
                             .then(ServerResponse.seeOther(URI.create("/books/" + bookId)).build());
                 })
                 .switchIfEmpty(ServerResponse.seeOther(URI.create("/")).build())
-                .onErrorResume(Exception.class, e -> 
-                        ServerResponse.seeOther(URI.create("/")).build());
+                .onErrorResume(handlePageErrors("/"));
     }
 }

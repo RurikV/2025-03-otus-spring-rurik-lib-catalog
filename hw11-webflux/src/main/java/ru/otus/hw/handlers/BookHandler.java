@@ -13,6 +13,9 @@ import ru.otus.hw.dto.BookCreateDto;
 import ru.otus.hw.dto.BookUpdateDto;
 import ru.otus.hw.services.BookService;
 
+import static ru.otus.hw.handlers.ErrorHandlingUtils.handleApiErrors;
+import static ru.otus.hw.handlers.ErrorHandlingUtils.handleGeneralErrors;
+
 @Component
 @RequiredArgsConstructor
 public class BookHandler {
@@ -25,8 +28,7 @@ public class BookHandler {
         return ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(bookService.findAll(), ru.otus.hw.dto.BookDto.class)
-                .onErrorResume(Exception.class, 
-                        e -> ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+                .onErrorResume(handleGeneralErrors());
     }
 
     public Mono<ServerResponse> getBook(ServerRequest request) {
@@ -44,10 +46,7 @@ public class BookHandler {
                 .flatMap(createdBook -> ServerResponse.status(HttpStatus.CREATED)
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(createdBook))
-                .onErrorResume(IllegalArgumentException.class, 
-                        e -> ServerResponse.badRequest().bodyValue(e.getMessage()))
-                .onErrorResume(Exception.class, 
-                        e -> ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+                .onErrorResume(handleApiErrors());
     }
 
     public Mono<ServerResponse> updateBook(ServerRequest request) {
@@ -59,10 +58,7 @@ public class BookHandler {
                 .flatMap(updatedBook -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(updatedBook))
-                .onErrorResume(IllegalArgumentException.class, 
-                        e -> ServerResponse.badRequest().bodyValue(e.getMessage()))
-                .onErrorResume(Exception.class, 
-                        e -> ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+                .onErrorResume(handleApiErrors());
     }
     
     private Mono<BookUpdateDto> validateBookUpdateDto(BookUpdateDto dto) {
@@ -84,7 +80,6 @@ public class BookHandler {
         String id = request.pathVariable("id");
         return bookService.deleteById(id)
                 .then(ServerResponse.noContent().build())
-                .onErrorResume(Exception.class, 
-                        e -> ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+                .onErrorResume(handleGeneralErrors());
     }
 }

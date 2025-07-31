@@ -12,6 +12,8 @@ import ru.otus.hw.services.GenreService;
 
 import java.util.List;
 
+import static ru.otus.hw.handlers.ErrorHandlingUtils.handlePageErrors;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -29,7 +31,8 @@ public class GenreHandler {
                 .doOnError(error -> log.error("[DEBUG_LOG] Error retrieving genres", error))
                 .flatMap(this::renderGenresPage)
                 .doOnSuccess(response -> log.info("[DEBUG_LOG] Successfully rendered genres page"))
-                .doOnError(error -> log.error("[DEBUG_LOG] Error rendering genres page", error));
+                .doOnError(error -> log.error("[DEBUG_LOG] Error rendering genres page", error))
+                .onErrorResume(handlePageErrors("/"));
     }
 
     private void logRetrievedGenres(List<GenreDto> genres) {
