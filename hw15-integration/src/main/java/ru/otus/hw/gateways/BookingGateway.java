@@ -8,7 +8,7 @@ import ru.otus.hw.models.Payment;
 @MessagingGateway
 public interface BookingGateway {
 
-    @Gateway(requestChannel = "bookingCreationChannel")
+    @Gateway(requestChannel = "bookingCreationChannel", replyTimeout = 5000)
     Booking createBooking(Booking booking);
 
     @Gateway(requestChannel = "paymentConfirmationChannel")
