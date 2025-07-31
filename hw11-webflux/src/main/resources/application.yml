@@ -1,0 +1,22 @@
+spring:
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: library
+      username: root
+      password: example
+      authentication-database: admin
+  messages:
+    basename: messages
+    encoding: UTF-8
+    cache-duration: 3600
+  webflux:
+    format:
+      date-time: iso
+  thymeleaf:
+    encoding: UTF-8
+    mode: HTML
+    cache: false
+server:
+  port: 8080
