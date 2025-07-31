@@ -69,13 +69,13 @@ public class Booking {
     public Booking() {
     }
 
-    public Booking(Long clientId, Long tenantId, Long scheduleId, Long deedId, LocalDateTime bookingTime, BookingStatus status) {
+    public Booking(Long clientId, Long tenantId, Long scheduleId, Long deedId, 
+                   LocalDateTime bookingTime) {
         this.clientId = clientId;
         this.tenantId = tenantId;
         this.scheduleId = scheduleId;
         this.deedId = deedId;
         this.bookingTime = bookingTime;
-        this.status = status;
     }
 
     public Long getId() {

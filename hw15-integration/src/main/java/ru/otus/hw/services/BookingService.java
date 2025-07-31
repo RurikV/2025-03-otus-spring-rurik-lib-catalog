@@ -13,22 +13,7 @@ public class BookingService {
         System.out.println("Creating booking for client: " + booking.getClientId() + 
                           " with tenant: " + booking.getTenantId());
         
-        // Validate booking data
-        if (booking.getClientId() == null) {
-            throw new IllegalArgumentException("Client ID cannot be null");
-        }
-        
-        if (booking.getTenantId() == null) {
-            throw new IllegalArgumentException("Tenant ID cannot be null");
-        }
-        
-        if (booking.getScheduleId() == null) {
-            throw new IllegalArgumentException("Schedule ID cannot be null");
-        }
-        
-        if (booking.getDeedId() == null) {
-            throw new IllegalArgumentException("Deed ID cannot be null");
-        }
+        validateBookingData(booking);
         
         // Set booking time and initial status
         booking.setBookingTime(LocalDateTime.now());
@@ -41,6 +26,21 @@ public class BookingService {
                           ", Status: " + booking.getStatus());
         
         return booking;
+    }
+
+    private void validateBookingData(Booking booking) {
+        if (booking.getClientId() == null) {
+            throw new IllegalArgumentException("Client ID cannot be null");
+        }
+        if (booking.getTenantId() == null) {
+            throw new IllegalArgumentException("Tenant ID cannot be null");
+        }
+        if (booking.getScheduleId() == null) {
+            throw new IllegalArgumentException("Schedule ID cannot be null");
+        }
+        if (booking.getDeedId() == null) {
+            throw new IllegalArgumentException("Deed ID cannot be null");
+        }
     }
 
     public Booking confirmBooking(Payment payment) {

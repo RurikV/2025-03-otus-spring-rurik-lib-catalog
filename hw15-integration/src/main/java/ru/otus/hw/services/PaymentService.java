@@ -14,25 +14,20 @@ public class PaymentService {
     public Booking initiatePayment(Booking booking) {
         System.out.println("Initiating payment for booking: " + booking.getId());
         
-        // Simulate external payment service call
         String paymentId = generatePaymentId();
         booking.setPaymentId(paymentId);
         
-        // Create payment record
         Payment payment = new Payment();
         payment.setBookingId(booking.getId());
         payment.setAmount(calculatePaymentAmount(booking));
         payment.setStatus(Payment.PaymentStatus.PROCESSING);
         payment.setTransactionId(paymentId);
         payment.setCreatedAt(LocalDateTime.now());
-        
-        // Simulate saving payment to database
         payment.setId(System.currentTimeMillis());
         
         System.out.println("Payment initiated with ID: " + paymentId + 
                           ", Amount: " + payment.getAmount());
         
-        // In real implementation, would call external payment gateway API
         simulateExternalPaymentServiceCall(payment);
         
         return booking;
