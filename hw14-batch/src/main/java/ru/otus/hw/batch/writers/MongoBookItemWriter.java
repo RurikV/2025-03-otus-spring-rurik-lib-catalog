@@ -1,7 +1,6 @@
 package ru.otus.hw.batch.writers;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,10 +10,9 @@ import ru.otus.hw.models.mongo.MongoBook;
 
 import java.util.List;
 
+@Slf4j
 @Component
 public class MongoBookItemWriter implements ItemWriter<MongoBook> {
-    
-    private static final Logger LOGGER = LoggerFactory.getLogger(MongoBookItemWriter.class);
     
     private final MongoTemplate mongoTemplate;
     
@@ -30,9 +28,9 @@ public class MongoBookItemWriter implements ItemWriter<MongoBook> {
         // Simple direct save - no complex logic needed
         for (MongoBook book : books) {
             mongoTemplate.save(book);
-            LOGGER.debug("Saved MongoDB book: {} with ID: {}", book.getTitle(), book.getId());
+            log.debug("Saved MongoDB book: {} with ID: {}", book.getTitle(), book.getId());
         }
         
-        LOGGER.debug("Saved {} books to MongoDB", books.size());
+        log.debug("Saved {} books to MongoDB", books.size());
     }
 }
