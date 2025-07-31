@@ -35,6 +35,14 @@ public class GenreHandler {
                 .onErrorResume(handlePageErrors("/"));
     }
 
+    public Mono<ServerResponse> getAllGenres(@SuppressWarnings("unused") ServerRequest request) {
+        log.info("[DEBUG_LOG] GenreHandler.getAllGenres() API called");
+        
+        return ServerResponse.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(genreService.findAll(), GenreDto.class);
+    }
+
     private void logRetrievedGenres(List<GenreDto> genres) {
         log.info("[DEBUG_LOG] Retrieved {} genres from service: {}", 
                 genres.size(), genres.stream().map(GenreDto::getName).toList());

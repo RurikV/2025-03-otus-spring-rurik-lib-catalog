@@ -24,20 +24,12 @@
             <a th:href="@{/}" class="btn btn-outline-primary" th:text="#{action.back.books}">Back to Books</a>
         </div>
 
-        <div th:if="${#lists.isEmpty(genres)}" class="alert alert-info" th:text="#{genres.list.empty}">
-            No genres found.
-        </div>
-
-        <div th:unless="${#lists.isEmpty(genres)}" class="row">
-            <div th:each="genre : ${genres}" class="col-md-6 col-lg-4 mb-3">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title" th:text="${genre.name}">Genre Name</h5>
-                        <p class="card-text">
-                            <small class="text-muted" th:text="#{genre.id}">ID:</small>
-                            <small class="text-muted" th:text="${genre.id}">Genre ID</small>
-                        </p>
-                    </div>
+        <div id="alert-container"></div>
+        
+        <div id="genres-container">
+            <div class="d-flex justify-content-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
                 </div>
             </div>
         </div>
@@ -56,5 +48,64 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadGenres();
+        });
+
+        async function loadGenres() {
+            try {
+                const response = await fetch('/api/genres');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const genres = await response.json();
+                renderGenres(genres);
+            } catch (error) {
+                showError('Failed to load genres: ' + error.message);
+            }
+        }
+
+        function renderGenres(genres) {
+            const container = document.getElementById('genres-container');
+            
+            if (genres.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">No genres found.</div>';
+                return;
+            }
+
+            const genresHtml = genres.map(genre => `
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">${escapeHtml(genre.name)}</h5>
+                            <p class="card-text">
+                                <small class="text-muted">ID:</small>
+                                <small class="text-muted">${escapeHtml(genre.id)}</small>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = `<div class="row">${genresHtml}</div>`;
+        }
+
+        function showError(message) {
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.innerHTML = `
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    ${escapeHtml(message)}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
 </body>
 </html>

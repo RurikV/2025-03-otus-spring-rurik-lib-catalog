@@ -24,20 +24,12 @@
             <a th:href="@{/}" class="btn btn-outline-primary" th:text="#{action.back.books}">Back to Books</a>
         </div>
 
-        <div th:if="${#lists.isEmpty(authors)}" class="alert alert-info" th:text="#{authors.list.empty}">
-            No authors found.
-        </div>
-
-        <div th:unless="${#lists.isEmpty(authors)}" class="row">
-            <div th:each="author : ${authors}" class="col-md-6 col-lg-4 mb-3">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title" th:text="${author.fullName}">Author Name</h5>
-                        <p class="card-text">
-                            <small class="text-muted" th:text="#{author.id}">ID:</small>
-                            <small class="text-muted" th:text="${author.id}">Author ID</small>
-                        </p>
-                    </div>
+        <div id="alert-container"></div>
+        
+        <div id="authors-container">
+            <div class="d-flex justify-content-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
                 </div>
             </div>
         </div>
@@ -56,5 +48,64 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAuthors();
+        });
+
+        async function loadAuthors() {
+            try {
+                const response = await fetch('/api/authors');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const authors = await response.json();
+                renderAuthors(authors);
+            } catch (error) {
+                showError('Failed to load authors: ' + error.message);
+            }
+        }
+
+        function renderAuthors(authors) {
+            const container = document.getElementById('authors-container');
+            
+            if (authors.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">No authors found.</div>';
+                return;
+            }
+
+            const authorsHtml = authors.map(author => `
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">${escapeHtml(author.fullName)}</h5>
+                            <p class="card-text">
+                                <small class="text-muted">ID:</small>
+                                <small class="text-muted">${escapeHtml(author.id)}</small>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = `<div class="row">${authorsHtml}</div>`;
+        }
+
+        function showError(message) {
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.innerHTML = `
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    ${escapeHtml(message)}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
 </body>
 </html>

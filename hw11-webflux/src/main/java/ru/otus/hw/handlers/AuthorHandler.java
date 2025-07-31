@@ -23,4 +23,12 @@ public class AuthorHandler {
                 .contentType(MediaType.TEXT_HTML)
                 .render("author/list");
     }
+
+    public Mono<ServerResponse> getAllAuthors(@SuppressWarnings("unused") ServerRequest request) {
+        log.info("[DEBUG_LOG] AuthorHandler.getAllAuthors() API called");
+        
+        return ServerResponse.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(authorService.findAll(), ru.otus.hw.dto.AuthorDto.class);
+    }
 }
