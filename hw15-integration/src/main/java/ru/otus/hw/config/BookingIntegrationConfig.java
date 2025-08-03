@@ -1,5 +1,7 @@
 package ru.otus.hw.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.dsl.IntegrationFlow;
@@ -15,6 +17,8 @@ import java.time.LocalDateTime;
 
 @Configuration
 public class BookingIntegrationConfig {
+
+    private static final Logger log = LoggerFactory.getLogger(BookingIntegrationConfig.class);
 
     // Payment Processing Flow Channels
     @Bean
@@ -186,9 +190,9 @@ public class BookingIntegrationConfig {
     public IntegrationFlow errorHandlingFlow() {
         return IntegrationFlow.from("errorChannel")
                 .handle(message -> {
-                    System.err.println("Error processing message: " + message.getPayload());
+                    log.error("Error processing message: {}", message.getPayload());
                     if (message.getPayload() instanceof Exception) {
-                        ((Exception) message.getPayload()).printStackTrace();
+                        log.error("Exception details:", (Exception) message.getPayload());
                     }
                 })
                 .get();
