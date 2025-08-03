@@ -1,5 +1,6 @@
 package ru.otus.hw.batch.readers;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.NonTransientResourceException;
 import org.springframework.batch.item.ParseException;
@@ -7,31 +8,31 @@ import org.springframework.batch.item.UnexpectedInputException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
-import ru.otus.hw.models.mongo.MongoComment;
+import ru.otus.hw.models.jpa.Comment;
+import ru.otus.hw.repositories.CommentRepository;
 
 import java.util.Iterator;
 import java.util.List;
 
+@Slf4j
 @Component
 @Scope(value = "step", proxyMode = ScopedProxyMode.TARGET_CLASS)
-public class MongoCommentItemReader implements ItemReader<MongoComment> {
+public class JpaCommentItemReader implements ItemReader<Comment> {
     
-    private final MongoTemplate mongoTemplate;
+    private final CommentRepository commentRepository;
 
-    private Iterator<MongoComment> commentIterator;
+    private Iterator<Comment> commentIterator;
 
     private boolean initialized = false;
     
     @Autowired
-    public MongoCommentItemReader(MongoTemplate mongoTemplate) {
-        this.mongoTemplate = mongoTemplate;
+    public JpaCommentItemReader(CommentRepository commentRepository) {
+        this.commentRepository = commentRepository;
     }
     
     @Override
-    public MongoComment read() throws UnexpectedInputException, ParseException, NonTransientResourceException {
+    public Comment read() throws UnexpectedInputException, ParseException, NonTransientResourceException {
         if (!initialized) {
             initialize();
         }
@@ -49,9 +50,10 @@ public class MongoCommentItemReader implements ItemReader<MongoComment> {
     }
     
     private void initialize() {
-        List<MongoComment> comments = mongoTemplate.find(new Query(), MongoComment.class);
+        // Use only findAll operation - no complex queries
+        List<Comment> comments = commentRepository.findAll();
         commentIterator = comments.iterator();
         initialized = true;
-        System.out.println("[DEBUG_LOG] MongoCommentItemReader initialized with " + comments.size() + " comments");
+        log.debug("JpaCommentItemReader initialized with {} comments", comments.size());
     }
 }
