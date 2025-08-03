@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title} ?: 'Library Catalog'">Library Catalog</title>
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}" th:text="#{app.title}">Library Catalog</a>
+            <div class="navbar-nav me-auto">
+                <a class="nav-link" th:href="@{/}" th:text="#{nav.books}">Books</a>
+                <a class="nav-link" th:href="@{/authors}" th:text="#{nav.authors}">Authors</a>
+                <a class="nav-link" th:href="@{/genres}" th:text="#{nav.genres}">Genres</a>
+            </div>
+            <div class="navbar-nav">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" th:text="#{lang.switch}">
+                        Language
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="languageDropdown">
+                        <li><a class="dropdown-item" th:href="@{''(lang=en)}" th:text="#{lang.en}">English</a></li>
+                        <li><a class="dropdown-item" th:href="@{''(lang=ru)}" th:text="#{lang.ru}">Русский</a></li>
+                    </ul>
+                </div>
+                <span class="navbar-text me-3" sec:authorize="isAuthenticated()">
+                    Welcome, <span sec:authentication="name">User</span>!
+                </span>
+                <form class="d-inline" th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()">
+                    <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div></div>
+    </div>
+
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>
