@@ -46,6 +46,10 @@ public class BookingService {
     public Booking confirmBooking(Payment payment) {
         System.out.println("Confirming booking for payment: " + payment.getId());
         
+        // In real implementation, would fetch booking from DB by payment.getBookingId()
+        // For now, we need to preserve the booking data from the flow context
+        // This method will be called in the integration flow where the booking data is available
+        
         // Create a booking object from payment (in real implementation, would fetch from DB)
         Booking booking = new Booking();
         booking.setId(payment.getBookingId());
@@ -55,6 +59,18 @@ public class BookingService {
         System.out.println("Booking confirmed: " + booking.getId());
         
         return booking;
+    }
+
+    public Booking confirmBookingWithData(Payment payment, Booking originalBooking) {
+        System.out.println("Confirming booking for payment: " + payment.getId());
+        
+        // Preserve all original booking data and update status
+        originalBooking.setStatus(Booking.BookingStatus.CONFIRMED);
+        originalBooking.setPaymentId(payment.getTransactionId());
+        
+        System.out.println("Booking confirmed: " + originalBooking.getId());
+        
+        return originalBooking;
     }
 
     public void validateBookingAvailability(Booking booking) {

@@ -131,6 +131,35 @@ public class BookingCommands {
         }
     }
 
+    @ShellMethod(value = "Process complete booking workflow in one call", key = {"complete-booking", "pcb"})
+    public String processCompleteBooking(@ShellOption("--client-id") Long clientId, 
+                                        @ShellOption("--tenant-id") Long tenantId,
+                                        @ShellOption("--schedule-id") Long scheduleId,
+                                        @ShellOption("--deed-id") Long deedId) {
+        try {
+            // Create booking
+            Booking booking = new Booking();
+            booking.setClientId(clientId);
+            booking.setTenantId(tenantId);
+            booking.setScheduleId(scheduleId);
+            booking.setDeedId(deedId);
+
+            System.out.println("Starting complete booking workflow through unified integration flow...");
+            Booking result = bookingGateway.processCompleteBooking(booking);
+
+            if (result == null) {
+                return "Booking was rejected due to missing required fields";
+            }
+
+            return "Complete booking workflow finished successfully: ID=" + result.getId() + 
+                   ", Status=" + result.getStatus() + 
+                   ", Payment ID=" + result.getPaymentId() +
+                   ", Schedule " + result.getScheduleId() + " is now occupied by client " + result.getClientId();
+        } catch (Exception e) {
+            return "Error in complete booking workflow: " + e.getMessage();
+        }
+    }
+
     @ShellMethod(value = "Test invalid booking creation", key = {"test-invalid-booking", "tib"})
     public String testInvalidBooking() {
         try {

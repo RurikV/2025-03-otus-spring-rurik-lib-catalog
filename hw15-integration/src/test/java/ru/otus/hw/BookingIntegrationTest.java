@@ -141,6 +141,45 @@ class BookingIntegrationTest {
     }
 
     @Test
+    void testUnifiedCompleteBookingWorkflow() {
+        // Given - Create a booking request with all required fields
+        Booking booking = new Booking();
+        booking.setClientId(3L);
+        booking.setTenantId(3L);
+        booking.setScheduleId(3L);
+        booking.setDeedId(3L);
+
+        // When - Process complete booking workflow in one call
+        Booking result = bookingGateway.processCompleteBooking(booking);
+
+        // Then - Verify complete workflow was successful
+        assertNotNull(result);
+        assertNotNull(result.getId());
+        assertEquals(Booking.BookingStatus.CONFIRMED, result.getStatus());
+        assertNotNull(result.getPaymentId());
+        assertEquals(3L, result.getClientId());
+        assertEquals(3L, result.getTenantId());
+        assertEquals(3L, result.getScheduleId());
+        assertEquals(3L, result.getDeedId());
+        assertNotNull(result.getBookingTime());
+    }
+
+    @Test
+    void testUnifiedWorkflowWithMissingFields() {
+        // Given - Create a booking request with missing required fields
+        Booking booking = new Booking();
+        booking.setClientId(4L);
+        booking.setTenantId(4L);
+        // Missing scheduleId and deedId
+
+        // When & Then - Should be filtered out and return null
+        assertDoesNotThrow(() -> {
+            Booking result = bookingGateway.processCompleteBooking(booking);
+            assertNull(result);
+        });
+    }
+
+    @Test
     void testCompleteBookingWorkflow() {
         // Given - Create a booking
         Booking booking = new Booking();

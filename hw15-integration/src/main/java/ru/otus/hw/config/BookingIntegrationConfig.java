@@ -10,6 +10,9 @@ import ru.otus.hw.models.Payment;
 import ru.otus.hw.services.BookingService;
 import ru.otus.hw.services.PaymentService;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 @Configuration
 public class BookingIntegrationConfig {
 
@@ -39,7 +42,72 @@ public class BookingIntegrationConfig {
         return MessageChannels.direct().getObject();
     }
 
-    // Booking Creation & Payment Initiation Flow
+    @Bean
+    public MessageChannel completeBookingChannel() {
+        return MessageChannels.direct().getObject();
+    }
+
+    // Complete Booking Workflow - Single Unified Flow
+    @Bean
+    public IntegrationFlow completeBookingWorkflow(BookingService bookingService, PaymentService paymentService) {
+        return IntegrationFlow.from("completeBookingChannel")
+                .filter(Booking.class, booking -> booking.getClientId() != null && booking.getTenantId() != null 
+                        && booking.getScheduleId() != null && booking.getDeedId() != null,
+                        spec -> spec.discardChannel("discardedBookingChannel"))
+                .handle(Booking.class, (booking, headers) -> {
+                    System.out.println("=== Starting Complete Booking Workflow ===");
+                    bookingService.logBookingProcessing(booking);
+                    return booking;
+                })
+                // Step 1: Validate schedule availability
+                .handle(Booking.class, (booking, headers) -> {
+                    bookingService.validateBookingAvailability(booking);
+                    return booking;
+                })
+                // Step 2: Create booking
+                .transform(Booking.class, bookingService::createBooking)
+                .filter(Booking.class, booking -> booking.getStatus() == Booking.BookingStatus.PENDING_PAYMENT)
+                // Step 3: Initiate payment
+                .transform(Booking.class, paymentService::initiatePayment)
+                .handle(Booking.class, (booking, headers) -> {
+                    System.out.println("Payment initiated for booking: " + booking.getId() + 
+                                     ", payment ID: " + booking.getPaymentId());
+                    return booking;
+                })
+                // Step 4: Simulate payment completion and confirm booking (preserving original data)
+                .handle(Booking.class, (booking, headers) -> {
+                    // Create payment confirmation
+                    Payment payment = new Payment();
+                    payment.setBookingId(booking.getId());
+                    payment.setTransactionId(booking.getPaymentId());
+                    payment.setAmount(new BigDecimal("100.00"));
+                    payment.setStatus(Payment.PaymentStatus.COMPLETED);
+                    payment.setCreatedAt(LocalDateTime.now());
+                    payment.setId(System.currentTimeMillis());
+                    
+                    // Process payment confirmation
+                    paymentService.processPaymentConfirmation(payment);
+                    
+                    // Confirm booking while preserving original data
+                    return bookingService.confirmBookingWithData(payment, booking);
+                })
+                // Step 6: Mark schedule as booked
+                .handle(Booking.class, (booking, headers) -> {
+                    bookingService.markScheduleAsBooked(booking.getScheduleId());
+                    return booking;
+                })
+                // Step 7: Process payout
+                .transform(Booking.class, paymentService::processPayout)
+                .handle(Booking.class, (booking, headers) -> {
+                    System.out.println("=== Complete Booking Workflow Finished Successfully ===");
+                    System.out.println("Final booking status: " + booking.getStatus());
+                    System.out.println("Schedule " + booking.getScheduleId() + " is now occupied by client " + booking.getClientId());
+                    return booking;
+                })
+                .get();
+    }
+
+    // Booking Creation & Payment Initiation Flow (kept for backward compatibility)
     @Bean
     public IntegrationFlow bookingCreationFlow(BookingService bookingService, PaymentService paymentService) {
         return IntegrationFlow.from("bookingCreationChannel")
