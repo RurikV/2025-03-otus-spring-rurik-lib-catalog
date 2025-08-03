@@ -16,9 +16,6 @@ import ru.otus.hw.batch.processors.JpaToMongoAuthorProcessor;
 import ru.otus.hw.batch.processors.JpaToMongoBookProcessor;
 import ru.otus.hw.batch.processors.JpaToMongoCommentProcessor;
 import ru.otus.hw.batch.processors.JpaToMongoGenreProcessor;
-import ru.otus.hw.batch.readers.JpaAuthorItemReader;
-import ru.otus.hw.batch.readers.JpaCommentItemReader;
-import ru.otus.hw.batch.readers.JpaGenreItemReader;
 import ru.otus.hw.batch.writers.MongoAuthorItemWriter;
 import ru.otus.hw.batch.writers.MongoBookItemWriter;
 import ru.otus.hw.batch.writers.MongoCommentItemWriter;
@@ -51,25 +48,16 @@ public class BatchConfiguration {
     private MongoBookItemWriter mongoBookItemWriter;
 
     @Autowired
-    private JpaCommentItemReader jpaCommentItemReader;
-
-    @Autowired
     private JpaToMongoCommentProcessor jpaToMongoCommentProcessor;
 
     @Autowired
     private MongoCommentItemWriter mongoCommentItemWriter;
 
     @Autowired
-    private JpaGenreItemReader jpaGenreItemReader;
-
-    @Autowired
     private JpaToMongoGenreProcessor jpaToMongoGenreProcessor;
 
     @Autowired
     private MongoGenreItemWriter mongoGenreItemWriter;
-
-    @Autowired
-    private JpaAuthorItemReader jpaAuthorItemReader;
 
     @Autowired
     private JpaToMongoAuthorProcessor jpaToMongoAuthorProcessor;
@@ -88,6 +76,36 @@ public class BatchConfiguration {
     }
 
     @Bean
+    public JpaPagingItemReader<Comment> jpaPagingCommentItemReader() {
+        return new JpaPagingItemReaderBuilder<Comment>()
+                .name("jpaPagingCommentItemReader")
+                .entityManagerFactory(entityManagerFactory)
+                .queryString("SELECT c FROM Comment c")
+                .pageSize(10)
+                .build();
+    }
+
+    @Bean
+    public JpaPagingItemReader<Author> jpaPagingAuthorItemReader() {
+        return new JpaPagingItemReaderBuilder<Author>()
+                .name("jpaPagingAuthorItemReader")
+                .entityManagerFactory(entityManagerFactory)
+                .queryString("SELECT a FROM Author a")
+                .pageSize(10)
+                .build();
+    }
+
+    @Bean
+    public JpaPagingItemReader<Genre> jpaPagingGenreItemReader() {
+        return new JpaPagingItemReaderBuilder<Genre>()
+                .name("jpaPagingGenreItemReader")
+                .entityManagerFactory(entityManagerFactory)
+                .queryString("SELECT g FROM Genre g")
+                .pageSize(10)
+                .build();
+    }
+
+    @Bean
     public Step bookMigrationStep() {
         return new StepBuilder("bookMigrationStep", jobRepository)
                 .<Book, MongoBook>chunk(10, transactionManager)
@@ -101,7 +119,7 @@ public class BatchConfiguration {
     public Step commentMigrationStep() {
         return new StepBuilder("commentMigrationStep", jobRepository)
                 .<Comment, MongoComment>chunk(10, transactionManager)
-                .reader(jpaCommentItemReader)
+                .reader(jpaPagingCommentItemReader())
                 .processor(jpaToMongoCommentProcessor)
                 .writer(mongoCommentItemWriter)
                 .build();
@@ -111,7 +129,7 @@ public class BatchConfiguration {
     public Step genreMigrationStep() {
         return new StepBuilder("genreMigrationStep", jobRepository)
                 .<Genre, MongoGenre>chunk(10, transactionManager)
-                .reader(jpaGenreItemReader)
+                .reader(jpaPagingGenreItemReader())
                 .processor(jpaToMongoGenreProcessor)
                 .writer(mongoGenreItemWriter)
                 .build();
@@ -121,7 +139,7 @@ public class BatchConfiguration {
     public Step authorMigrationStep() {
         return new StepBuilder("authorMigrationStep", jobRepository)
                 .<Author, MongoAuthor>chunk(10, transactionManager)
-                .reader(jpaAuthorItemReader)
+                .reader(jpaPagingAuthorItemReader())
                 .processor(jpaToMongoAuthorProcessor)
                 .writer(mongoAuthorItemWriter)
                 .build();
