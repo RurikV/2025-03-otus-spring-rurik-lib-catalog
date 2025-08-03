@@ -41,6 +41,12 @@ public class ApiRouterConfig {
                 .andRoute(GET("/api/genres").and(accept(MediaType.APPLICATION_JSON)), 
                         genreHandler::getAllGenres)
                 .andRoute(GET("/api/books/{bookId}/comments").and(accept(MediaType.APPLICATION_JSON)), 
-                        commentHandler::getCommentsByBookId);
+                        commentHandler::getCommentsByBookId)
+                .andRoute(POST("/api/books/{bookId}/comments").and(accept(MediaType.APPLICATION_JSON)), 
+                        commentHandler::createComment)
+                .andRoute(PUT("/api/comments/{id}").and(accept(MediaType.APPLICATION_JSON)), 
+                        commentHandler::updateCommentApi)
+                .andRoute(DELETE("/api/comments/{id}").and(accept(MediaType.APPLICATION_JSON)), 
+                        commentHandler::deleteCommentApi);
     }
 }
