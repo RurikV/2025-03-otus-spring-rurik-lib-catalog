@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @Configuration
 public class BookingIntegrationConfig {
 
-    private static final Logger log = LoggerFactory.getLogger(BookingIntegrationConfig.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BookingIntegrationConfig.class);
 
     // Payment Processing Flow Channels
     @Bean
@@ -55,59 +55,18 @@ public class BookingIntegrationConfig {
     @Bean
     public IntegrationFlow completeBookingWorkflow(BookingService bookingService, PaymentService paymentService) {
         return IntegrationFlow.from("completeBookingChannel")
-                .filter(Booking.class, booking -> booking.getClientId() != null && booking.getTenantId() != null 
-                        && booking.getScheduleId() != null && booking.getDeedId() != null,
-                        spec -> spec.discardChannel("discardedBookingChannel"))
-                .handle(Booking.class, (booking, headers) -> {
-                    System.out.println("=== Starting Complete Booking Workflow ===");
-                    bookingService.logBookingProcessing(booking);
-                    return booking;
-                })
-                // Step 1: Validate schedule availability
-                .handle(Booking.class, (booking, headers) -> {
-                    bookingService.validateBookingAvailability(booking);
-                    return booking;
-                })
-                // Step 2: Create booking
+                .filter(Booking.class, this::isValidBooking, spec -> spec.discardChannel("discardedBookingChannel"))
+                .handle(Booking.class, (booking, headers) -> logWorkflowStart(booking, bookingService))
+                .handle(Booking.class, (booking, headers) -> validateAvailability(booking, bookingService))
                 .transform(Booking.class, bookingService::createBooking)
                 .filter(Booking.class, booking -> booking.getStatus() == Booking.BookingStatus.PENDING_PAYMENT)
-                // Step 3: Initiate payment
                 .transform(Booking.class, paymentService::initiatePayment)
-                .handle(Booking.class, (booking, headers) -> {
-                    System.out.println("Payment initiated for booking: " + booking.getId() + 
-                                     ", payment ID: " + booking.getPaymentId());
-                    return booking;
-                })
-                // Step 4: Simulate payment completion and confirm booking (preserving original data)
-                .handle(Booking.class, (booking, headers) -> {
-                    // Create payment confirmation
-                    Payment payment = new Payment();
-                    payment.setBookingId(booking.getId());
-                    payment.setTransactionId(booking.getPaymentId());
-                    payment.setAmount(new BigDecimal("100.00"));
-                    payment.setStatus(Payment.PaymentStatus.COMPLETED);
-                    payment.setCreatedAt(LocalDateTime.now());
-                    payment.setId(System.currentTimeMillis());
-                    
-                    // Process payment confirmation
-                    paymentService.processPaymentConfirmation(payment);
-                    
-                    // Confirm booking while preserving original data
-                    return bookingService.confirmBookingWithData(payment, booking);
-                })
-                // Step 6: Mark schedule as booked
-                .handle(Booking.class, (booking, headers) -> {
-                    bookingService.markScheduleAsBooked(booking.getScheduleId());
-                    return booking;
-                })
-                // Step 7: Process payout
+                .handle(Booking.class, this::logPaymentInitiation)
+                .handle(Booking.class, (booking, headers) -> 
+                    processPaymentAndConfirmBooking(booking, bookingService, paymentService))
+                .handle(Booking.class, (booking, headers) -> markScheduleBooked(booking, bookingService))
                 .transform(Booking.class, paymentService::processPayout)
-                .handle(Booking.class, (booking, headers) -> {
-                    System.out.println("=== Complete Booking Workflow Finished Successfully ===");
-                    System.out.println("Final booking status: " + booking.getStatus());
-                    System.out.println("Schedule " + booking.getScheduleId() + " is now occupied by client " + booking.getClientId());
-                    return booking;
-                })
+                .handle(Booking.class, this::logWorkflowCompletion)
                 .get();
     }
 
@@ -121,13 +80,13 @@ public class BookingIntegrationConfig {
                 .filter(Booking.class, booking -> booking.getStatus() == Booking.BookingStatus.PENDING_PAYMENT)
                 .channel("paymentInitiationChannel")
                 .handle(Booking.class, (booking, headers) -> {
-                    System.out.println("Booking created, initiating payment for booking: " + booking.getId());
+                    LOG.info("Booking created, initiating payment for booking: {}", booking.getId());
                     return booking;
                 })
                 .transform(Booking.class, paymentService::initiatePayment)
                 .handle(Booking.class, (booking, headers) -> {
-                    System.out.println("Payment initiated for booking: " + booking.getId() + 
-                                     ", payment ID: " + booking.getPaymentId());
+                    LOG.info("Payment initiated for booking: {}, payment ID: {}", 
+                            booking.getId(), booking.getPaymentId());
                     return booking;
                 })
                 .get();
@@ -144,7 +103,7 @@ public class BookingIntegrationConfig {
     public IntegrationFlow discardedBookingFlow() {
         return IntegrationFlow.from("discardedBookingChannel")
                 .handle(Booking.class, (booking, headers) -> {
-                    System.out.println("Booking discarded due to missing required fields");
+                    LOG.info("Booking discarded due to missing required fields");
                     return null;
                 })
                 .get();
@@ -160,7 +119,7 @@ public class BookingIntegrationConfig {
                 .transform(Payment.class, bookingService::confirmBooking)
                 .channel("payoutChannel")
                 .handle(Booking.class, (booking, headers) -> {
-                    System.out.println("Booking confirmed: " + booking.getId() + ", initiating payout");
+                    LOG.info("Booking confirmed: {}, initiating payout", booking.getId());
                     return booking;
                 })
                 .get();
@@ -173,8 +132,7 @@ public class BookingIntegrationConfig {
                 .filter(Booking.class, booking -> booking.getStatus() == Booking.BookingStatus.CONFIRMED)
                 .transform(Booking.class, paymentService::processPayout)
                 .handle(Booking.class, (booking, headers) -> {
-                    System.out.println("Payout processed for booking: " + booking.getId() + 
-                                     " to tenant: " + booking.getTenantId());
+                    LOG.info("Payout processed for booking: {} to tenant: {}", booking.getId(), booking.getTenantId());
                     return booking;
                 })
                 .get();
@@ -190,11 +148,63 @@ public class BookingIntegrationConfig {
     public IntegrationFlow errorHandlingFlow() {
         return IntegrationFlow.from("errorChannel")
                 .handle(message -> {
-                    log.error("Error processing message: {}", message.getPayload());
+                    LOG.error("Error processing message: {}", message.getPayload());
                     if (message.getPayload() instanceof Exception) {
-                        log.error("Exception details:", (Exception) message.getPayload());
+                        LOG.error("Exception details:", (Exception) message.getPayload());
                     }
                 })
                 .get();
+    }
+
+    private boolean isValidBooking(Booking booking) {
+        return booking.getClientId() != null && booking.getTenantId() != null 
+                && booking.getScheduleId() != null && booking.getDeedId() != null;
+    }
+
+    private Booking logWorkflowStart(Booking booking, BookingService bookingService) {
+        LOG.info("=== Starting Complete Booking Workflow ===");
+        bookingService.logBookingProcessing(booking);
+        return booking;
+    }
+
+    private Booking validateAvailability(Booking booking, BookingService bookingService) {
+        bookingService.validateBookingAvailability(booking);
+        return booking;
+    }
+
+    private Booking logPaymentInitiation(Booking booking, Object headers) {
+        LOG.info("Payment initiated for booking: {}, payment ID: {}", 
+                booking.getId(), booking.getPaymentId());
+        return booking;
+    }
+
+    private Booking markScheduleBooked(Booking booking, BookingService bookingService) {
+        bookingService.markScheduleAsBooked(booking.getScheduleId());
+        return booking;
+    }
+
+    private Booking logWorkflowCompletion(Booking booking, Object headers) {
+        LOG.info("=== Complete Booking Workflow Finished Successfully ===");
+        LOG.info("Final booking status: {}", booking.getStatus());
+        LOG.info("Schedule {} is now occupied by client {}", booking.getScheduleId(), booking.getClientId());
+        return booking;
+    }
+
+    private Booking processPaymentAndConfirmBooking(Booking booking, BookingService bookingService, 
+                                                   PaymentService paymentService) {
+        // Create payment confirmation
+        Payment payment = new Payment();
+        payment.setBookingId(booking.getId());
+        payment.setTransactionId(booking.getPaymentId());
+        payment.setAmount(new BigDecimal("100.00"));
+        payment.setStatus(Payment.PaymentStatus.COMPLETED);
+        payment.setCreatedAt(LocalDateTime.now());
+        payment.setId(System.currentTimeMillis());
+        
+        // Process payment confirmation
+        paymentService.processPaymentConfirmation(payment);
+        
+        // Confirm booking while preserving original data
+        return bookingService.confirmBookingWithData(payment, booking);
     }
 }

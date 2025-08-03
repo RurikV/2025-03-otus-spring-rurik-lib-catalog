@@ -1,5 +1,7 @@
 package ru.otus.hw.commands;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
@@ -13,6 +15,8 @@ import java.time.LocalDateTime;
 
 @ShellComponent
 public class BookingCommands {
+
+    private static final Logger LOG = LoggerFactory.getLogger(BookingCommands.class);
 
     private final BookingGateway bookingGateway;
 
@@ -34,7 +38,7 @@ public class BookingCommands {
             booking.setScheduleId(scheduleId);
             booking.setDeedId(deedId);
 
-            System.out.println("Starting booking creation through integration flow...");
+            LOG.info("Starting booking creation through integration flow...");
             Booking createdBooking = bookingGateway.createBooking(booking);
 
             return "Booking created successfully: ID=" + createdBooking.getId() + 
@@ -58,7 +62,7 @@ public class BookingCommands {
             booking.setScheduleId(scheduleId);
             booking.setDeedId(deedId);
 
-            System.out.println("Starting asynchronous booking creation...");
+            LOG.info("Starting asynchronous booking creation...");
             bookingGateway.createBookingAsync(booking);
 
             return "Booking sent for asynchronous processing: Client=" + clientId + ", Tenant=" + tenantId;
@@ -80,7 +84,7 @@ public class BookingCommands {
             payment.setStatus(Payment.PaymentStatus.COMPLETED);
             payment.setCreatedAt(LocalDateTime.now());
 
-            System.out.println("Simulating payment confirmation webhook...");
+            LOG.info("Simulating payment confirmation webhook...");
             bookingGateway.processPaymentConfirmation(payment);
 
             return "Payment confirmation processed: " + transactionId + " for booking " + bookingId;
@@ -99,7 +103,7 @@ public class BookingCommands {
             booking.setTenantId(tenantId);
             booking.setStatus(Booking.BookingStatus.CONFIRMED);
 
-            System.out.println("Processing payout through integration flow...");
+            LOG.info("Processing payout through integration flow...");
             bookingGateway.processPayout(booking);
 
             return "Payout processed for booking: " + bookingId + " to tenant: " + tenantId;
@@ -111,19 +115,19 @@ public class BookingCommands {
     @ShellMethod(value = "Test complete booking flow", key = {"test-booking-flow", "tbf"})
     public String testBookingFlow() {
         try {
-            System.out.println("Testing complete booking flow...");
+            LOG.info("Testing complete booking flow...");
             
             // Step 1: Create booking
             String result1 = createBooking(1L, 1L, 1L, 1L);
-            System.out.println("Step 1 - " + result1);
+            LOG.info("Step 1 - {}", result1);
             
             // Step 2: Simulate payment confirmation
             String result2 = confirmPayment(1L, "TXN_12345", "100.00");
-            System.out.println("Step 2 - " + result2);
+            LOG.info("Step 2 - {}", result2);
             
             // Step 3: Process payout
             String result3 = processPayout(1L, 1L);
-            System.out.println("Step 3 - " + result3);
+            LOG.info("Step 3 - {}", result3);
 
             return "Complete booking flow test completed successfully!";
         } catch (Exception e) {
@@ -144,7 +148,7 @@ public class BookingCommands {
             booking.setScheduleId(scheduleId);
             booking.setDeedId(deedId);
 
-            System.out.println("Starting complete booking workflow through unified integration flow...");
+            LOG.info("Starting complete booking workflow through unified integration flow...");
             Booking result = bookingGateway.processCompleteBooking(booking);
 
             if (result == null) {
@@ -167,7 +171,7 @@ public class BookingCommands {
             Booking invalidBooking = new Booking();
             invalidBooking.setClientId(null); // Missing client ID
 
-            System.out.println("Testing invalid booking creation...");
+            LOG.info("Testing invalid booking creation...");
             bookingGateway.createBookingAsync(invalidBooking);
 
             return "Invalid booking sent for processing (should be rejected)";
