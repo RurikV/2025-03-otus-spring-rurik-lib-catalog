@@ -14,7 +14,9 @@ public class BookingPaymentOrchestrator {
 
     private static final Logger LOG = LoggerFactory.getLogger(BookingPaymentOrchestrator.class);
 
+    
     private final BookingService bookingService;
+
     private final PaymentService paymentService;
 
     public BookingPaymentOrchestrator(BookingService bookingService, PaymentService paymentService) {
@@ -32,7 +34,7 @@ public class BookingPaymentOrchestrator {
         payment.setCreatedAt(LocalDateTime.now());
         payment.setId(System.currentTimeMillis());
 
-        LOG.info("Simulating payment completion for booking: {} with transaction: {}", booking.getId(), payment.getTransactionId());
+        LOG.info("Simulating payment completion: booking={}, tx={}", booking.getId(), payment.getTransactionId());
 
         // Process payment confirmation
         paymentService.processPaymentConfirmation(payment);

@@ -9,6 +9,7 @@ import org.springframework.integration.channel.DirectChannel;
 import org.springframework.messaging.MessageChannel;
 import ru.otus.hw.models.Booking;
 import ru.otus.hw.models.Payment;
+import ru.otus.hw.services.BookingPaymentOrchestrator;
 import ru.otus.hw.services.BookingService;
 import ru.otus.hw.services.PaymentService;
 
@@ -50,7 +51,9 @@ public class BookingIntegrationConfig {
 
     // Complete Booking Workflow - Single Unified Flow
     @Bean
-    public IntegrationFlow completeBookingWorkflow(BookingService bookingService, PaymentService paymentService, ru.otus.hw.services.BookingPaymentOrchestrator orchestrator) {
+    public IntegrationFlow completeBookingWorkflow(BookingService bookingService,
+                                                   PaymentService paymentService,
+                                                   BookingPaymentOrchestrator orchestrator) {
         return IntegrationFlow.from("completeBookingChannel")
                 .filter(Booking.class, this::isValidBooking, spec -> spec.discardChannel("discardedBookingChannel"))
                 .handle(Booking.class, (booking, headers) -> logWorkflowStart(booking, bookingService))
