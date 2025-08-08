@@ -61,7 +61,6 @@ public class BookingIntegrationConfig {
                 .transform(Booking.class, bookingService::createBooking)
                 .filter(Booking.class, booking -> booking.getStatus() == Booking.BookingStatus.PENDING_PAYMENT)
                 .transform(Booking.class, paymentService::initiatePayment)
-                .handle(Booking.class, this::logPaymentInitiation)
                 .handle(Booking.class, (booking, headers) -> 
                     processPaymentAndConfirmBooking(booking, bookingService, paymentService))
                 .handle(Booking.class, (booking, headers) -> markScheduleBooked(booking, bookingService))
@@ -79,16 +78,7 @@ public class BookingIntegrationConfig {
                 .transform(Booking.class, bookingService::createBooking)
                 .filter(Booking.class, booking -> booking.getStatus() == Booking.BookingStatus.PENDING_PAYMENT)
                 .channel("paymentInitiationChannel")
-                .handle(Booking.class, (booking, headers) -> {
-                    LOG.info("Booking created, initiating payment for booking: {}", booking.getId());
-                    return booking;
-                })
                 .transform(Booking.class, paymentService::initiatePayment)
-                .handle(Booking.class, (booking, headers) -> {
-                    LOG.info("Payment initiated for booking: {}, payment ID: {}", 
-                            booking.getId(), booking.getPaymentId());
-                    return booking;
-                })
                 .get();
     }
 
@@ -172,11 +162,6 @@ public class BookingIntegrationConfig {
         return booking;
     }
 
-    private Booking logPaymentInitiation(Booking booking, Object headers) {
-        LOG.info("Payment initiated for booking: {}, payment ID: {}", 
-                booking.getId(), booking.getPaymentId());
-        return booking;
-    }
 
     private Booking markScheduleBooked(Booking booking, BookingService bookingService) {
         bookingService.markScheduleAsBooked(booking.getScheduleId());
