@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.dsl.IntegrationFlow;
-import org.springframework.integration.dsl.MessageChannels;
+import org.springframework.integration.channel.DirectChannel;
 import org.springframework.messaging.MessageChannel;
 import ru.otus.hw.models.Booking;
 import ru.otus.hw.models.Payment;
@@ -23,32 +23,32 @@ public class BookingIntegrationConfig {
     // Payment Processing Flow Channels
     @Bean
     public MessageChannel paymentInitiationChannel() {
-        return MessageChannels.direct().getObject();
+        return new DirectChannel();
     }
 
     @Bean
     public MessageChannel paymentConfirmationChannel() {
-        return MessageChannels.direct().getObject();
+        return new DirectChannel();
     }
 
     @Bean
     public MessageChannel payoutChannel() {
-        return MessageChannels.direct().getObject();
+        return new DirectChannel();
     }
 
     @Bean
     public MessageChannel bookingCreationChannel() {
-        return MessageChannels.direct().getObject();
+        return new DirectChannel();
     }
 
     @Bean
     public MessageChannel bookingUpdateChannel() {
-        return MessageChannels.direct().getObject();
+        return new DirectChannel();
     }
 
     @Bean
     public MessageChannel completeBookingChannel() {
-        return MessageChannels.direct().getObject();
+        return new DirectChannel();
     }
 
     // Complete Booking Workflow - Single Unified Flow
@@ -95,7 +95,7 @@ public class BookingIntegrationConfig {
     // Channel for discarded bookings
     @Bean
     public MessageChannel discardedBookingChannel() {
-        return MessageChannels.direct().getObject();
+        return new DirectChannel();
     }
 
     // Flow to handle discarded bookings and return null
@@ -141,7 +141,7 @@ public class BookingIntegrationConfig {
     // Error handling channels
     @Bean
     public MessageChannel errorChannel() {
-        return MessageChannels.direct().getObject();
+        return new DirectChannel();
     }
 
     @Bean
