@@ -12,9 +12,6 @@ import ru.otus.hw.models.Payment;
 import ru.otus.hw.services.BookingService;
 import ru.otus.hw.services.PaymentService;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
 @Configuration
 public class BookingIntegrationConfig {
 
@@ -53,7 +50,7 @@ public class BookingIntegrationConfig {
 
     // Complete Booking Workflow - Single Unified Flow
     @Bean
-    public IntegrationFlow completeBookingWorkflow(BookingService bookingService, PaymentService paymentService) {
+    public IntegrationFlow completeBookingWorkflow(BookingService bookingService, PaymentService paymentService, ru.otus.hw.services.BookingPaymentOrchestrator orchestrator) {
         return IntegrationFlow.from("completeBookingChannel")
                 .filter(Booking.class, this::isValidBooking, spec -> spec.discardChannel("discardedBookingChannel"))
                 .handle(Booking.class, (booking, headers) -> logWorkflowStart(booking, bookingService))
@@ -61,8 +58,7 @@ public class BookingIntegrationConfig {
                 .transform(Booking.class, bookingService::createBooking)
                 .filter(Booking.class, booking -> booking.getStatus() == Booking.BookingStatus.PENDING_PAYMENT)
                 .transform(Booking.class, paymentService::initiatePayment)
-                .handle(Booking.class, (booking, headers) -> 
-                    processPaymentAndConfirmBooking(booking, bookingService, paymentService))
+                .transform(Booking.class, orchestrator::processPaymentAndConfirmBooking)
                 .handle(Booking.class, (booking, headers) -> markScheduleBooked(booking, bookingService))
                 .transform(Booking.class, paymentService::processPayout)
                 .handle(Booking.class, this::logWorkflowCompletion)
@@ -175,21 +171,4 @@ public class BookingIntegrationConfig {
         return booking;
     }
 
-    private Booking processPaymentAndConfirmBooking(Booking booking, BookingService bookingService, 
-                                                   PaymentService paymentService) {
-        // Create payment confirmation
-        Payment payment = new Payment();
-        payment.setBookingId(booking.getId());
-        payment.setTransactionId(booking.getPaymentId());
-        payment.setAmount(new BigDecimal("100.00"));
-        payment.setStatus(Payment.PaymentStatus.COMPLETED);
-        payment.setCreatedAt(LocalDateTime.now());
-        payment.setId(System.currentTimeMillis());
-        
-        // Process payment confirmation
-        paymentService.processPaymentConfirmation(payment);
-        
-        // Confirm booking while preserving original data
-        return bookingService.confirmBookingWithData(payment, booking);
-    }
 }
