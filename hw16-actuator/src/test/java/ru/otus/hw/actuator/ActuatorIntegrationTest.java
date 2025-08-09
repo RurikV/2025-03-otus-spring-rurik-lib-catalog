@@ -32,7 +32,11 @@ import static org.mockito.BDDMockito.given;
                 // Avoid real Mongo autoconfiguration
                 "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration,org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration",
                 // Ensure details in health response
-                "management.endpoint.health.show-details=always"
+                "management.endpoint.health.show-details=always",
+                // Expose required actuator endpoints explicitly for test context
+                "management.endpoints.web.exposure.include=health,info,metrics,logfile",
+                // Ensure logfile endpoint has a target file
+                "logging.file.name=logs/hw16-actuator.log"
         })
 @ActiveProfiles("test")
 @DisplayName("Actuator endpoints")
