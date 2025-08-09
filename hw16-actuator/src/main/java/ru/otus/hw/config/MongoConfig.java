@@ -3,6 +3,7 @@ package ru.otus.hw.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Genre;
@@ -23,6 +24,7 @@ public class MongoConfig {
     private final BookRepository bookRepository;
 
     @Bean
+    @Profile("!test")
     public List<Book> initializeDatabase() {
         // Clear existing data
         bookRepository.deleteAll();

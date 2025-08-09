@@ -7,7 +7,22 @@ spring:
       username: root
       password: example
       authentication-database: admin
+    rest:
+      base-path: /api
   messages:
     basename: messages
     encoding: UTF-8
     cache-duration: 3600
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,logfile
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  file:
+    name: logs/hw16-actuator.log
