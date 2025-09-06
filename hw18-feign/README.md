@@ -146,3 +146,104 @@ hw09-mvc/
 └── src/test/java/ru/otus/hw/
     └── controllers/         # Controller tests
 ```
+
+---
+
+# Resilience4j + HTTP Client (hw18-feign module)
+
+This module includes examples of making outbound HTTP calls using Spring’s Rest client (implemented with WebClient) and protecting them with Resilience4j (Retry + Circuit Breaker) and graceful fallbacks.
+
+Key classes:
+- `ru.otus.hw.external.HttpBinClient` — simple interface for outbound calls.
+- `ru.otus.hw.external.HttpBinClientRest` — implementation using `WebClient` (Spring’s reactive HTTP client).
+- `ru.otus.hw.services.ExternalHttpService` — wraps outbound calls and applies Resilience4j annotations and fallbacks.
+- `ru.otus.hw.controllers.ExternalController` — exposes demo endpoints to exercise the behavior.
+
+## How to run only this module
+From the project root:
+```
+mvn -pl hw18-feign -am clean package
+mvn -pl hw18-feign spring-boot:run
+```
+Application will start on port 8080 by default.
+
+MongoDB isn’t required for the demo endpoints below.
+
+## Endpoints to try
+1) Plain success
+```
+curl -i http://localhost:8080/external/status/200
+```
+Expected: HTTP 200 with raw body (from httpbin.org).
+
+2) Error that triggers retry/fallback
+```
+curl -i http://localhost:8080/external/status/500
+```
+Expected: After configured retries, a fallback response similar to:
+```
+fallback-status:500, reason=FeignException or WebClientResponseException (depends on client)
+```
+
+3) Delayed response (may trigger retry depending on timeouts)
+```
+curl -i http://localhost:8080/external/delay/2
+```
+Expected: If within client timeouts, a body is returned; otherwise, a fallback like:
+```
+fallback-delay:2, reason=ReadTimeoutException (or similar)
+```
+
+## Configuration
+Location: `hw18-feign/src/main/resources/application.yml`
+
+- External service base URL:
+```
+external:
+  httpbin:
+    base-url: https://httpbin.org
+```
+- Resilience4j settings (instance name: `httpbin`):
+```
+resilience4j:
+  circuitbreaker:
+    instances:
+      httpbin:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 10s
+  retry:
+    instances:
+      httpbin:
+        maxAttempts: 3
+        waitDuration: 300ms
+```
+You can override these via environment variables or `--` CLI properties, e.g.:
+```
+java -jar target/hw18-feign-0.0.1-SNAPSHOT.jar \
+  --external.httpbin.base-url=https://httpbin.org \
+  --resilience4j.retry.instances.httpbin.maxAttempts=2 \
+  --resilience4j.retry.instances.httpbin.waitDuration=200ms
+```
+
+## How resilience and fallbacks work here
+- `ExternalHttpService#getStatus` and `#getDelayed` are annotated with
+  - `@Retry(name = "httpbin")`
+  - `@CircuitBreaker(name = "httpbin", fallbackMethod = "<...>Fallback")`
+- On exception after retries, the respective `statusFallback` or `delayFallback` method is used to return a friendly message.
+- An additional try/catch is present to ensure deterministic fallback behavior even if AOP is disabled in a minimal test context.
+
+## HTTP client
+- Implemented with Spring WebClient (reactive Rest client) in `HttpBinClientRest`.
+- Base URL is configurable via `external.httpbin.base-url`.
+
+## Tests
+Run only this module’s tests:
+```
+mvn -pl hw18-feign -am clean test
+```
+Focus test:
+- `ExternalHttpServiceTest` verifies both fallback and pass-through success behavior with a minimal Spring context.

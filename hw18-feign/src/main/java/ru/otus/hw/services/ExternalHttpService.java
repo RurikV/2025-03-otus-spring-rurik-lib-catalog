@@ -2,6 +2,8 @@ package ru.otus.hw.services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import ru.otus.hw.external.HttpBinClient;
 
 @Service
@@ -10,6 +12,8 @@ public class ExternalHttpService {
 
     private final HttpBinClient httpBinClient;
 
+    @CircuitBreaker(name = "httpbin", fallbackMethod = "statusFallback")
+    @Retry(name = "httpbin")
     public String getStatus(int code) {
         try {
             return httpBinClient.status(code);
@@ -22,6 +26,8 @@ public class ExternalHttpService {
         return "fallback-status:" + code + ", reason=" + ex.getClass().getSimpleName();
     }
 
+    @CircuitBreaker(name = "httpbin", fallbackMethod = "delayFallback")
+    @Retry(name = "httpbin")
     public String getDelayed(int seconds) {
         try {
             return httpBinClient.delay(seconds);
