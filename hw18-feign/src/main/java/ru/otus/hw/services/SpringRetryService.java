@@ -12,24 +12,25 @@ import ru.otus.hw.external.HttpBinClient;
 @RequiredArgsConstructor
 public class SpringRetryService {
 
-    private static final Logger log = LoggerFactory.getLogger(SpringRetryService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SpringRetryService.class);
 
     private final HttpBinClient httpBinClient;
 
     public String getStatusWithRetry(int code) {
         int maxAttempts = 3;
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-            log.info("Attempting to get status for code: {}", code);
+            LOG.info("Attempting to get status for code: {}", code);
             try {
                 return httpBinClient.status(code);
             } catch (HttpServerErrorException ex) {
                 if (attempt == maxAttempts) {
-                    log.error("Failed to get status after retries for code: {}, error: {}", code, ex.getMessage());
+                    LOG.error("Failed to get status after retries for code: {}, error: {}", code, ex.getMessage());
                     return "Recovery: Failed to get status " + code + " after retries";
                 }
             } catch (ResourceAccessException ex) {
                 if (attempt == maxAttempts) {
-                    log.error("Failed to get status after retries for code: {}, error: {}", code, ex.getMessage());
+                    LOG.error("Failed to get status after retries for code: {}, error: {}",
+                            code, ex.getMessage());
                     return "Recovery: Network error for status " + code + " after retries";
                 }
             }
@@ -41,17 +42,19 @@ public class SpringRetryService {
     public String getDelayedWithRetry(int seconds) {
         int maxAttempts = 2;
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-            log.info("Attempting to get delayed response for {} seconds", seconds);
+            LOG.info("Attempting to get delayed response for {} seconds", seconds);
             try {
                 return httpBinClient.delay(seconds);
             } catch (HttpServerErrorException ex) {
                 if (attempt == maxAttempts) {
-                    log.error("Failed to get delayed response after retries for {} seconds, error: {}", seconds, ex.getMessage());
+                    LOG.error("Failed to get delayed response after retries for {} seconds, error: {}",
+                            seconds, ex.getMessage());
                     return "Recovery: Failed to get delay " + seconds + " after retries";
                 }
             } catch (ResourceAccessException ex) {
                 if (attempt == maxAttempts) {
-                    log.error("Failed to get delayed response after retries for {} seconds, error: {}", seconds, ex.getMessage());
+                    LOG.error("Failed to get delayed response after retries for {} seconds, error: {}",
+                            seconds, ex.getMessage());
                     return "Recovery: Network error for delay " + seconds + " after retries";
                 }
             }
@@ -62,7 +65,7 @@ public class SpringRetryService {
     public String simulateFailingOperation(String input) {
         int maxAttempts = 4;
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-            log.info("Attempting failing operation with input: {}", input);
+            LOG.info("Attempting failing operation with input: {}", input);
             try {
                 if (Math.random() < 0.7) { // 70% chance to fail
                     throw new RuntimeException("Simulated failure for: " + input);
@@ -70,7 +73,8 @@ public class SpringRetryService {
                 return "Success: " + input;
             } catch (RuntimeException ex) {
                 if (attempt == maxAttempts) {
-                    log.error("Failed operation after retries for input: {}, error: {}", input, ex.getMessage());
+                    LOG.error("Failed operation after retries for input: {}, error: {}",
+                            input, ex.getMessage());
                     return "Recovery: Operation failed for " + input + " after all retries";
                 }
             }
