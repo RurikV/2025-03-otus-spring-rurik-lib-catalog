@@ -38,3 +38,4 @@ resilience4j:
       httpbin:
         maxAttempts: 3
         waitDuration: 300ms
+

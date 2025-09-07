@@ -147,8 +147,6 @@ hw09-mvc/
     └── controllers/         # Controller tests
 ```
 
----
-
 # Resilience4j + HTTP Client (hw18-feign module)
 
 This module includes examples of making outbound HTTP calls using Spring’s Rest client (implemented with WebClient) and protecting them with Resilience4j (Retry + Circuit Breaker) and graceful fallbacks.
@@ -247,3 +245,4 @@ mvn -pl hw18-feign -am clean test
 ```
 Focus test:
 - `ExternalHttpServiceTest` verifies both fallback and pass-through success behavior with a minimal Spring context.
+

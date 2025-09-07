@@ -25,7 +25,6 @@
         </checkstyle.config.url>
     </properties>
 
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
